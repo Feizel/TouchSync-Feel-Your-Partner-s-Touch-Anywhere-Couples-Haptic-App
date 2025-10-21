@@ -4,7 +4,10 @@ import PackageDescription
 let package = Package(
     name: "TouchSync",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v15)
+    ],
+    products: [
+        .library(name: "TouchSync", targets: ["TouchSync"])
     ],
     dependencies: [
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "10.0.0")
@@ -19,6 +22,10 @@ let package = Package(
                 .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk")
+            ],
+            resources: [
+                .process("Assets.xcassets"),
+                .process("TouchSync.xcdatamodeld")
             ]
         )
     ]

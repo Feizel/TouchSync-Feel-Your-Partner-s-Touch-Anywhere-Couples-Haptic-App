@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:TouchSync}",
+            "name": "Debug TouchSync",
+            "program": "${workspaceFolder:TouchSync}/.build/debug/TouchSync",
+            "preLaunchTask": "swift: Build Debug TouchSync"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:TouchSync}",
+            "name": "Release TouchSync",
+            "program": "${workspaceFolder:TouchSync}/.build/release/TouchSync",
+            "preLaunchTask": "swift: Build Release TouchSync"
+        }
+    ]
+}
