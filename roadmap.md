@@ -22,10 +22,10 @@
 - [x] Asset integration (app icon, gamification icons, gesture placeholders)
 
 ### Sprint 3: Haptic System & Real-time Drawing
-- [ ] Core Haptics implementation (5 preset gesture patterns)
-- [ ] Drawing canvas with haptic feedback (UITouch tracking, path rendering)
-- [ ] Firebase Realtime sync (sub-100ms latency, E2E encryption)
-- [ ] Heart character animation sync with haptics
+- [x] Core Haptics implementation (5 preset gesture patterns)
+- [x] Drawing canvas with haptic feedback (UITouch tracking, path rendering)
+- [x] Firebase Realtime sync (sub-100ms latency, E2E encryption)
+- [x] Heart character animation sync with haptics
 
 ### Sprint 4: Gesture Library & Touch History
 - [ ] Gesture library UI (5 preset buttons with haptic preview)

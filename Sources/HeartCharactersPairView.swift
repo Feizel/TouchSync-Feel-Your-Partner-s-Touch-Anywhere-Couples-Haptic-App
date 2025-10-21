@@ -7,6 +7,8 @@ struct HeartCharactersPairView: View {
     @State private var userHeartActive: Bool = false
     @State private var partnerHeartActive: Bool = false
     
+    private let notificationCenter = NotificationCenter.default
+    
     var body: some View {
         VStack(spacing: 16) {
             // Heart Characters with Connection Line
@@ -63,6 +65,10 @@ struct HeartCharactersPairView: View {
         )
         .onAppear {
             updateConnectionStatus()
+            setupNotifications()
+        }
+        .onDisappear {
+            removeNotifications()
         }
         .onTapGesture {
             sendHeartbeat()
@@ -88,6 +94,50 @@ struct HeartCharactersPairView: View {
                 partnerHeartActive = false
             }
         }
+    }
+    
+    private func setupNotifications() {
+        notificationCenter.addObserver(
+            forName: .hapticGestureStarted,
+            object: nil,
+            queue: .main
+        ) { _ in
+            userHeartActive = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                userHeartActive = false
+            }
+        }
+        
+        notificationCenter.addObserver(
+            forName: .drawingStarted,
+            object: nil,
+            queue: .main
+        ) { _ in
+            userHeartActive = true
+        }
+        
+        notificationCenter.addObserver(
+            forName: .drawingEnded,
+            object: nil,
+            queue: .main
+        ) { _ in
+            userHeartActive = false
+        }
+        
+        notificationCenter.addObserver(
+            forName: .partnerTouchReceived,
+            object: nil,
+            queue: .main
+        ) { _ in
+            partnerHeartActive = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                partnerHeartActive = false
+            }
+        }
+    }
+    
+    private func removeNotifications() {
+        notificationCenter.removeObserver(self)
     }
 }
 

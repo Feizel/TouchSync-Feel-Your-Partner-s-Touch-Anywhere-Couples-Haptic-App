@@ -43,20 +43,54 @@ struct HomeView: View {
                     ConnectionMeterView()
                         .padding(.horizontal)
                     
-                    // Canvas Placeholder
-                    VStack {
+                    // Touch Canvas
+                    VStack(spacing: 12) {
                         Text("Touch Canvas")
                             .font(.headline)
-                            .padding(.bottom, 8)
                         
-                        Rectangle()
-                            .fill(Color.black)
+                        DrawingCanvasView(isActive: .constant(false))
                             .frame(height: 300)
-                            .cornerRadius(20)
                             .overlay(
-                                Text("Draw here to send touch")
-                                    .foregroundColor(.white.opacity(0.6))
+                                VStack {
+                                    HStack {
+                                        // Small heart characters watching
+                                        HeartCharacter(
+                                            color: .touchSyncCrimson,
+                                            isUser: true,
+                                            isActive: false,
+                                            customization: HeartCustomization()
+                                        )
+                                        .scaleEffect(0.4)
+                                        
+                                        Spacer()
+                                        
+                                        HeartCharacter(
+                                            color: .touchSyncRoseGold,
+                                            isUser: false,
+                                            isActive: false,
+                                            customization: HeartCustomization()
+                                        )
+                                        .scaleEffect(0.4)
+                                    }
+                                    .padding(.top, 8)
+                                    
+                                    Spacer()
+                                    
+                                    Text("Draw here to send touch")
+                                        .foregroundColor(.white.opacity(0.6))
+                                        .font(.caption)
+                                }
+                                .allowsHitTesting(false)
                             )
+                    }
+                    .padding(.horizontal)
+                    
+                    // Gesture Library
+                    VStack(spacing: 8) {
+                        Text("Quick Gestures")
+                            .font(.headline)
+                        
+                        GestureLibraryView()
                     }
                     .padding(.horizontal)
                     
