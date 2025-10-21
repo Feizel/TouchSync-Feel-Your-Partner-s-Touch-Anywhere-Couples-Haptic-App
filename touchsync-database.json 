@@ -1,0 +1,444 @@
+{
+  "touchsync_database_architecture": {
+    "overview": {
+      "database_strategy": "Hybrid approach using Firebase Realtime Database for real-time features and Firestore for structured data",
+      "data_sovereignty": "EU/US Firebase regions, South Africa edge caching via Firebase CDN",
+      "backup_strategy": "Automated daily backups with 30-day retention",
+      "disaster_recovery": "RPO: 1 hour, RTO: 4 hours"
+    },
+
+    "firebase_realtime_database": {
+      "purpose": "Real-time haptic touch synchronization, presence, and live status",
+      "region": "us-central1 (primary), europe-west1 (secondary for GDPR)",
+      "structure": {
+        "/users/{userId}": {
+          "schema": {
+            "displayName": "string",
+            "partnerId": "string | null",
+            "availabilityStatus": "enum: Available | Busy | Sleeping",
+            "lastSeen": "timestamp",
+            "currentStreak": "number",
+            "totalXP": "number",
+            "currentLevel": "number",
+            "freezeTokens": "number (0-5)"
+          },
+          "indexes": ["partnerId", "lastSeen"],
+          "security": "Only readable by user and their partner"
+        },
+        "/sessions/{sessionId}": {
+          "schema": {
+            "user1Id": "string",
+            "user2Id": "string",
+            "createdAt": "timestamp",
+            "lastActivityAt": "timestamp",
+            "encryptionKey": "string (encrypted per-couple key)",
+            "status": "enum: active | paused | ended"
+          },
+          "indexes": ["user1Id", "user2Id"],
+          "security": "Only accessible by session participants"
+        },
+        "/touches/{sessionId}/{touchId}": {
+          "schema": {
+            "type": "enum: realtime | gesture",
+            "gestureType": "string (if type=gesture): squeeze | kiss | hug | tap | heart",
+            "senderId": "string",
+            "receiverId": "string",
+            "timestamp": "timestamp",
+            "path": "array<{x: number, y: number, intensity: number}> (if type=realtime, encrypted)",
+            "hapticPattern": "string (JSON, encrypted)",
+            "readBy": "string (receiverId when acknowledged)",
+            "replayCount": "number"
+          },
+          "indexes": ["senderId", "receiverId", "timestamp"],
+          "ttl": "24 hours (auto-delete after)",
+          "security": "Only readable by session participants"
+        },
+        "/presence/{userId}": {
+          "schema": {
+            "online": "boolean",
+            "lastSeen": "timestamp",
+            "currentView": "enum: home | history | settings | drawing",
+            "deviceId": "string"
+          },
+          "indexes": ["online"],
+          "onDisconnect": "Set online to false",
+          "security": "Readable by partner only"
+        }
+      },
+      "performance_optimization": {
+        "connection_pooling": "Automatic via Firebase SDK",
+        "data_compression": "Gzip for large payloads",
+        "batching": "Group touch path updates (20 points per batch)",
+        "caching": "Disk persistence enabled for offline support"
+      }
+    },
+
+    "firestore_database": {
+      "purpose": "Structured data storage for user profiles, touch history, subscriptions, achievements",
+      "region": "us-central1 (primary), eur3 (multi-region for GDPR)",
+      "collections": {
+        "users": {
+          "document_id": "{userId}",
+          "schema": {
+            "userId": "string (Firebase Auth UID)",
+            "email": "string (encrypted)",
+            "displayName": "string",
+            "partnerId": "string | null",
+            "partnerName": "string | null",
+            "relationshipStartDate": "timestamp | null",
+            "currentStreak": "number",
+            "longestStreak": "number",
+            "totalXP": "number",
+            "currentLevel": "number",
+            "currentTier": "string: New Love | Deepening Bond | Strong Connection | Soulmates",
+            "freezeTokens": "number (0-5)",
+            "isPremium": "boolean",
+            "premiumExpiresAt": "timestamp | null",
+            "dailyTouchGoal": "number (3-10)",
+            "availabilityStatus": "string: Available | Busy | Sleeping",
+            "heartCustomization": {
+              "hairstyle": "string | null",
+              "accessories": "array<string>",
+              "colorTint": "string (hex) | null"
+            },
+            "notificationPreferences": {
+              "touchReceived": "boolean",
+              "ringsReminder": "boolean",
+              "streakProtection": "boolean",
+              "dailyReminderTime": "string (HH:mm)"
+            },
+            "createdAt": "timestamp",
+            "updatedAt": "timestamp"
+          },
+          "indexes": [
+            {"fields": ["partnerId"], "order": "ASCENDING"},
+            {"fields": ["currentStreak"], "order": "DESCENDING"},
+            {"fields": ["isPremium", "currentLevel"], "order": "DESCENDING"}
+          ],
+          "security": "User can read/write own document, partner can read limited fields"
+        },
+        "couples": {
+          "document_id": "{coupleId} (deterministic: sorted userId1_userId2)",
+          "schema": {
+            "user1Id": "string",
+            "user2Id": "string",
+            "linkedAt": "timestamp",
+            "relationshipStartDate": "timestamp",
+            "coupleEncryptionKey": "string (encrypted with both user keys)",
+            "sharedGoals": {
+              "dailyTouchGoal": "number",
+              "qualityTimeGoal": "number (seconds)"
+            },
+            "milestones": "array<{date: timestamp, type: string, description: string}>",
+            "anniversaries": "array<{date: timestamp, name: string, notifyDaysBefore: number}>",
+            "totalTouchesSent": "number",
+            "perfectDaysCount": "number",
+            "createdAt": "timestamp",
+            "updatedAt": "timestamp"
+          },
+          "indexes": [
+            {"fields": ["user1Id", "user2Id"], "order": "ASCENDING"},
+            {"fields": ["linkedAt"], "order": "DESCENDING"}
+          ],
+          "security": "Both users in couple can read/write"
+        },
+        "touch_history": {
+          "document_id": "{touchId}",
+          "schema": {
+            "gestureType": "string: squeeze | kiss | hug | tap | heart | custom",
+            "senderId": "string",
+            "receiverId": "string",
+            "coupleId": "string",
+            "timestamp": "timestamp",
+            "hapticPatternJSON": "string (encrypted, for custom gestures)",
+            "pathData": "string (encrypted, for drawings)",
+            "isFavorite": "boolean",
+            "wasRepliedTo": "boolean",
+            "replyTimestamp": "timestamp | null",
+            "replyTouchId": "string | null",
+            "xpEarned": "number",
+            "createdAt": "timestamp"
+          },
+          "indexes": [
+            {"fields": ["coupleId", "timestamp"], "order": "DESCENDING"},
+            {"fields": ["senderId", "timestamp"], "order": "DESCENDING"},
+            {"fields": ["receiverId", "timestamp"], "order": "DESCENDING"},
+            {"fields": ["isFavorite"], "order": "ASCENDING"}
+          ],
+          "ttl_field": "timestamp",
+          "ttl_duration": "7 days (free tier), unlimited (premium)",
+          "security": "Only accessible by sender and receiver"
+        },
+        "daily_progress": {
+          "document_id": "{userId}_{date_YYYYMMDD}",
+          "schema": {
+            "userId": "string",
+            "date": "timestamp",
+            "touchGoalProgress": "number (0-10)",
+            "touchGoalTarget": "number",
+            "responseGoalProgress": "number (0-3)",
+            "responseGoalTarget": 3,
+            "qualityGoalProgress": "number (seconds, 0-60)",
+            "qualityGoalTarget": 30,
+            "perfectDay": "boolean",
+            "xpEarned": "number",
+            "touchesSent": "array<{touchId: string, timestamp: timestamp}>",
+            "touchesReceived": "array<{touchId: string, timestamp: timestamp}>",
+            "createdAt": "timestamp",
+            "updatedAt": "timestamp"
+          },
+          "indexes": [
+            {"fields": ["userId", "date"], "order": "DESCENDING"},
+            {"fields": ["perfectDay"], "order": "ASCENDING"}
+          ],
+          "ttl_field": "date",
+          "ttl_duration": "90 days",
+          "security": "User can read/write own progress, partner can read"
+        },
+        "achievements": {
+          "document_id": "{achievementId}",
+          "schema": {
+            "userId": "string",
+            "achievementType": "string: bronze_heart | silver_heart | gold_heart | diamond_heart | perfect_week | level_milestone",
+            "achievementName": "string",
+            "description": "string",
+            "iconUrl": "string",
+            "earnedAt": "timestamp",
+            "metadata": "map<string, any> (e.g., {daysAtAchievement: 30})"
+          },
+          "indexes": [
+            {"fields": ["userId", "earnedAt"], "order": "DESCENDING"}
+          ],
+          "security": "User can read own achievements, partner can read"
+        },
+        "subscriptions": {
+          "document_id": "{subscriptionId}",
+          "schema": {
+            "userId": "string",
+            "plan": "string: free | premium",
+            "subscriptionId": "string (App Store transaction ID or RevenueCat ID)",
+            "productId": "string: touchsync_premium_monthly | touchsync_premium_annual",
+            "purchaseDate": "timestamp",
+            "expiresAt": "timestamp",
+            "autoRenew": "boolean",
+            "isActive": "boolean",
+            "platform": "string: ios | android",
+            "originalTransactionId": "string",
+            "createdAt": "timestamp",
+            "updatedAt": "timestamp"
+          },
+          "indexes": [
+            {"fields": ["userId", "isActive"], "order": "ASCENDING"},
+            {"fields": ["expiresAt"], "order": "ASCENDING"}
+          ],
+          "security": "User can read own subscription, admin can write"
+        },
+        "voice_recordings": {
+          "document_id": "{recordingId}",
+          "schema": {
+            "userId": "string",
+            "partnerId": "string",
+            "questionId": "string",
+            "questionText": "string",
+            "recordingUrl": "string (Firebase Cloud Storage path, encrypted)",
+            "duration": "number (seconds, max 60)",
+            "transcript": "string | null (optional AI transcription)",
+            "recordedAt": "timestamp",
+            "listenedBy": "array<string> (userIds who listened)",
+            "isFavorite": "boolean",
+            "createdAt": "timestamp"
+          },
+          "indexes": [
+            {"fields": ["userId", "recordedAt"], "order": "DESCENDING"},
+            {"fields": ["questionId"], "order": "ASCENDING"}
+          ],
+          "ttl_field": "recordedAt",
+          "ttl_duration": "90 days (configurable by user)",
+          "security": "Only accessible by user and their partner"
+        },
+        "unlocked_features": {
+          "document_id": "{userId}_{featureId}",
+          "schema": {
+            "userId": "string",
+            "featureId": "string: custom_gestures | nature_patterns | heartbeat_sync | touch_library | hairstyles | accessories",
+            "unlockedAt": "timestamp",
+            "levelUnlockedAt": "number",
+            "isPremiumFeature": "boolean"
+          },
+          "indexes": [
+            {"fields": ["userId"], "order": "ASCENDING"}
+          ],
+          "security": "User can read own unlocked features"
+        },
+        "analytics_events": {
+          "document_id": "{eventId}",
+          "schema": {
+            "userId": "string",
+            "eventType": "string: touch_sent | touch_received | level_up | perfect_day | streak_milestone",
+            "eventData": "map<string, any>",
+            "timestamp": "timestamp",
+            "sessionId": "string"
+          },
+          "indexes": [
+            {"fields": ["userId", "timestamp"], "order": "DESCENDING"},
+            {"fields": ["eventType", "timestamp"], "order": "DESCENDING"}
+          ],
+          "ttl_field": "timestamp",
+          "ttl_duration": "180 days",
+          "security": "Write-only for authenticated users, admin read"
+        }
+      },
+      "performance_optimization": {
+        "composite_indexes": [
+          {"collection": "touch_history", "fields": ["coupleId", "isFavorite", "timestamp"]},
+          {"collection": "daily_progress", "fields": ["userId", "perfectDay", "date"]}
+        ],
+        "caching_strategy": "Aggressive caching for user profile (5 min TTL), real-time for touch history",
+        "pagination": "Cursor-based pagination for history (20 items per page)",
+        "query_optimization": "Use whereIn for coupleId queries, limit to 50 results max"
+      }
+    },
+
+    "core_data_local_storage": {
+      "purpose": "Offline-first caching and quick access to frequently used data",
+      "entities": {
+        "CachedUser": {
+          "attributes": [
+            "userId: String",
+            "displayName: String",
+            "partnerId: String?",
+            "currentStreak: Int32",
+            "totalXP: Int32",
+            "currentLevel: Int32",
+            "lastSyncedAt: Date"
+          ],
+          "relationships": []
+        },
+        "CachedTouch": {
+          "attributes": [
+            "touchId: UUID",
+            "gestureType: String",
+            "senderId: String",
+            "receiverId: String",
+            "timestamp: Date",
+            "isFavorite: Bool",
+            "isSynced: Bool"
+          ],
+          "relationships": [],
+          "fetch_limit": 100
+        },
+        "CachedDailyProgress": {
+          "attributes": [
+            "date: Date",
+            "userId: String",
+            "touchGoalProgress: Int32",
+            "responseGoalProgress: Int32",
+            "qualityGoalProgress: Int32",
+            "perfectDay: Bool"
+          ],
+          "relationships": []
+        }
+      },
+      "sync_strategy": {
+        "background_sync": "Every 5 minutes when app is active",
+        "foreground_sync": "Immediate on app launch",
+        "conflict_resolution": "Server wins for state data, client wins for new touches",
+        "offline_queue": "Store up to 50 pending touches, sync on reconnection"
+      }
+    },
+
+    "cloudkit_sync": {
+      "purpose": "Cross-device sync for premium users (iPhone to iPad)",
+      "container": "iCloud.com.touchsync.app",
+      "record_types": {
+        "UserPreferences": {
+          "fields": [
+            "userId: String",
+            "heartCustomization: Asset (JSON)",
+            "notificationPreferences: Asset (JSON)",
+            "unlockedFeatures: Asset (JSON)"
+          ]
+        },
+        "FavoriteTouches": {
+          "fields": [
+            "touchId: String",
+            "hapticPattern: Asset (encrypted)",
+            "favoritedat: Date"
+          ]
+        }
+      },
+      "sync_frequency": "Automatic with CKSyncEngine",
+      "conflict_resolution": "Last-write-wins with timestamp"
+    },
+
+    "data_migration_strategy": {
+      "versioning": {
+        "current_version": 1,
+        "migration_path": "V1 → V2 (when adding new fields)",
+        "backward_compatibility": "Maintain for 2 major versions"
+      },
+      "schema_changes": {
+        "additive_changes": "Safe, no migration needed (nullable fields)",
+        "destructive_changes": "Require explicit migration script + user notification",
+        "migration_timing": "During app update, before first launch"
+      }
+    },
+
+    "backup_and_recovery": {
+      "firebase_automated_backups": {
+        "frequency": "Daily at 02:00 UTC",
+        "retention": "30 days",
+        "location": "gs://touchsync-backups/firestore/{date}/",
+        "encryption": "AES-256 with Google-managed keys"
+      },
+      "user_data_export": {
+        "format": "JSON",
+        "includes": ["Profile", "Touch history", "Voice recordings", "Achievements", "Subscription info"],
+        "trigger": "User-initiated via Settings → Export My Data",
+        "delivery": "Email link to encrypted ZIP file, expires in 7 days"
+      },
+      "disaster_recovery": {
+        "rpo": "1 hour (real-time data may be lost)",
+        "rto": "4 hours (restore from latest backup)",
+        "failover_region": "Automatic Firebase multi-region replication",
+        "testing_frequency": "Quarterly DR drill"
+      }
+    },
+
+    "database_monitoring": {
+      "metrics": [
+        "Read/write operations per second",
+        "Query latency (p50, p95, p99)",
+        "Error rate",
+        "Storage usage",
+        "Concurrent connections"
+      ],
+      "alerting": {
+        "high_latency": "Alert if p95 > 500ms",
+        "error_rate": "Alert if error rate > 1%",
+        "storage_quota": "Alert at 80% of quota",
+        "concurrent_connections": "Alert if > 10,000 simultaneous"
+      },
+      "tools": ["Firebase Console", "Cloud Monitoring", "Custom Datadog integration"]
+    },
+
+    "compliance_and_auditing": {
+      "audit_logging": {
+        "logged_events": [
+          "User account creation/deletion",
+          "Partner linking/unlinking",
+          "Subscription changes",
+          "Data export requests",
+          "Admin access to user data"
+        ],
+        "retention": "7 years for compliance",
+        "storage": "Separate Firestore collection with strict access control"
+      },
+      "data_residency": {
+        "south_africa_users": "Firebase europe-west1 region (GDPR-compliant, closest to SA)",
+        "gdpr_users": "Firebase eur3 multi-region",
+        "us_users": "Firebase us-central1"
+      }
+    }
+  }
+}

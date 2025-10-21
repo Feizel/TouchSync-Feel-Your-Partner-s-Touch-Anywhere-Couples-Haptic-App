@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "touches": {
+      "$sessionId": {
+        ".read": "auth != null && (data.child('user1Id').val() == auth.uid || data.child('user2Id').val() == auth.uid)",
+        ".write": "auth != null && (data.child('user1Id').val() == auth.uid || data.child('user2Id').val() == auth.uid)"
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": "auth != null && (auth.uid == $userId || root.child('users').child(auth.uid).child('partnerId').val() == $userId)",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    "presence": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    }
+  }
+}

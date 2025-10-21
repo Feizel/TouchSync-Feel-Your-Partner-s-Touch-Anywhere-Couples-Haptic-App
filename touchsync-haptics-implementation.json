@@ -1,0 +1,202 @@
+{
+    "file_purpose": "Detailed Core Haptics implementation with visual feedback for heart characters",
+  
+    "haptic_manager": {
+      "file_name": "HapticsManager.swift",
+      "class_type": "Singleton",
+      "initialization": "let shared = HapticsManager()",
+      "properties": [
+        {"name": "engine", "type": "CHHapticEngine?"},
+        {"name": "supportsHaptics", "type": "Bool", "computed": true},
+        {"name": "isPlaying", "type": "Bool", "default": false}
+      ],
+      "methods": {
+        "setupEngine": {
+          "signature": "func setupEngine() throws",
+          "implementation": [
+            "1. Check CHHapticEngine.capabilitiesForHardware().supportsHaptics",
+            "2. Initialize: engine = try CHHapticEngine()",
+            "3. Set resetHandler and stoppedHandler callbacks",
+            "4. Call engine?.start()",
+            "5. Post notification for UI to enable haptic features"
+          ]
+        },
+        "playPresetGesture": {
+          "signature": "func playPresetGesture(_ gestureType: GestureType, completion: @escaping () -> Void)",
+          "parameters": {"gestureType": "Enum (squeeze|kiss|hug|tap|heart)"},
+          "implementation": [
+            "1. Get corresponding haptic pattern from presetPatterns dictionary",
+            "2. Create CHHapticPattern from events array",
+            "3. Create player: try engine?.makePlayer(with: pattern)",
+            "4. Trigger heart character animation via NotificationCenter",
+            "5. Call player.start(atTime: 0)",
+            "6. Execute completion handler when finished"
+          ],
+          "heart_character_sync": "Posts notification 'HapticGestureStarted' with gesture type for UI animation"
+        },
+        "playCustomPattern": {
+          "signature": "func playCustomPattern(_ pattern: HapticPattern) throws",
+          "parameters": {"pattern": "Custom HapticPattern model"},
+          "implementation": [
+            "1. Convert HapticPattern.events to [CHHapticEvent]",
+            "2. Create CHHapticPattern(events: hapticEvents, parameters: [])",
+            "3. Trigger heart character 'custom gesture' animation",
+            "4. Create and start player"
+          ]
+        },
+        "playRealtimeDrawing": {
+          "signature": "func playRealtimeDrawing(intensity: Float, sharpness: Float)",
+          "parameters": {
+            "intensity": "0.0 to 1.0",
+            "sharpness": "0.0 to 1.0"
+          },
+          "implementation": [
+            "1. Create continuous event: CHHapticEvent(eventType: .hapticContinuous, parameters: [intensity, sharpness], relativeTime: 0, duration: 0.1)",
+            "2. Use dynamic parameter for real-time updates",
+            "3. Update intensity/sharpness as finger moves",
+            "4. Notify heart characters to glow/pulse in sync with intensity"
+          ],
+          "visual_sync": "Heart character brightness modulates with intensity (0.3 to 1.0 opacity)"
+        },
+        "stopAllHaptics": {
+          "signature": "func stopAllHaptics()",
+          "implementation": "Stop all active haptic players and reset heart character animations"
+        }
+      },
+      "preset_patterns": {
+        "squeeze_hand": {
+          "events": [
+            {"time": 0.0, "type": ".hapticTransient", "intensity": 0.8, "sharpness": 0.5},
+            {"time": 0.2, "type": ".hapticTransient", "intensity": 0.8, "sharpness": 0.5},
+            {"time": 0.4, "type": ".hapticTransient", "intensity": 0.8, "sharpness": 0.5}
+          ],
+          "heart_animation": "Hearts squeeze/compress slightly 3 times",
+          "duration": "0.6 seconds"
+        },
+        "forehead_kiss": {
+          "events": [
+            {"time": 0.0, "type": ".hapticContinuous", "intensity": 0.4, "sharpness": 0.2, "duration": 1.0}
+          ],
+          "heart_animation": "Hearts glow softly with warm rose gold light, lean closer",
+          "duration": "1.0 seconds"
+        },
+        "hug": {
+          "events": [
+            {"time": 0.0, "type": ".hapticContinuous", "intensity": 0.6, "sharpness": 0.3, "duration": 3.0}
+          ],
+          "parameter_curve": {
+            "type": "intensity",
+            "control_points": [
+              {"time": 0.0, "value": 0.3},
+              {"time": 1.5, "value": 0.8},
+              {"time": 3.0, "value": 0.3}
+            ]
+          },
+          "heart_animation": "Hearts embrace, connection line thickens and glows brightly",
+          "duration": "3.0 seconds"
+        },
+        "shoulder_tap": {
+          "events": [
+            {"time": 0.0, "type": ".hapticTransient", "intensity": 1.0, "sharpness": 0.8},
+            {"time": 0.15, "type": ".hapticTransient", "intensity": 1.0, "sharpness": 0.8}
+          ],
+          "heart_animation": "Hearts bounce up slightly twice",
+          "duration": "0.3 seconds"
+        },
+        "heart_trace": {
+          "events": [
+            {"time": 0.0, "type": ".hapticTransient", "intensity": 0.7, "sharpness": 0.4},
+            {"time": 0.3, "type": ".hapticContinuous", "intensity": 0.5, "sharpness": 0.3, "duration": 0.4},
+            {"time": 0.8, "type": ".hapticTransient", "intensity": 0.7, "sharpness": 0.4},
+            {"time": 1.1, "type": ".hapticContinuous", "intensity": 0.5, "sharpness": 0.3, "duration": 0.4},
+            {"time": 1.6, "type": ".hapticTransient", "intensity": 0.8, "sharpness": 0.5}
+          ],
+          "note": "Mimics heartbeat pattern with lub-dub rhythm",
+          "heart_animation": "Hearts pulse in rhythm with heartbeat pattern, emit small heart particles",
+          "duration": "2.0 seconds"
+        }
+      }
+    },
+  
+    "realtime_canvas_haptics": {
+      "file_name": "DrawingCanvasView.swift",
+      "touch_handling": {
+        "touchesBegan": "Start continuous haptic with base intensity 0.3, hearts lean toward canvas",
+        "touchesMoved": "Update intensity based on velocity: faster = higher intensity (0.4-1.0 range), hearts glow brighter",
+        "touchesEnded": "Stop continuous haptic, send final transient tap, hearts return to idle"
+      },
+      "velocity_calculation": {
+        "formula": "intensity = min(1.0, 0.3 + (velocity / maxVelocity) * 0.7)",
+        "maxVelocity": "1000 points per second",
+        "smoothing": "Apply exponential moving average with alpha = 0.3 to prevent jitter"
+      },
+      "network_sync": {
+        "throttle": "Send path updates every 50ms max (20 updates/second)",
+        "payload": {
+          "x": "CGFloat",
+          "y": "CGFloat",
+          "intensity": "Float",
+          "sharpness": "Float",
+          "timestamp": "Double"
+        },
+        "firebase_path": "/touches/{sessionId}/realtime/{touchId}",
+        "encryption": "Path data encrypted with couple key before transmission"
+      },
+      "visual_feedback": {
+        "heart_characters": "Watch from top corners, glow intensity matches drawing intensity",
+        "path_color": "Gradient from crimson to amber based on intensity",
+        "connection_line": "Pulses with each touch event"
+      }
+    },
+  
+    "advanced_patterns": {
+      "nature_rainfall": {
+        "description": "Random light taps simulating rain drops",
+        "duration": "10 seconds",
+        "events": "50 random hapticTransient events between 0.0-10.0s",
+        "intensity_range": "0.2 to 0.5",
+        "sharpness": "0.8 (crisp drops)",
+        "randomization": "time += uniform random(0.1-0.3)",
+        "heart_animation": "Hearts have small droplet particles falling around them",
+        "unlock_level": 25,
+        "premium": false
+      },
+      "ocean_waves": {
+        "description": "Rhythmic continuous waves with crescendo/decrescendo",
+        "duration": "15 seconds",
+        "pattern": [
+          "3x wave cycles of 5 seconds each",
+          "Each cycle: hapticContinuous with intensity curve 0.2→0.8→0.2 over 5s",
+          "Sharpness: 0.3 (soft/rounded)",
+          "1 second gap between waves"
+        ],
+        "heart_animation": "Hearts sway side to side in wave rhythm, blue tint overlay",
+        "unlock_level": 50,
+        "premium": true
+      },
+      "gentle_heartbeat": {
+        "description": "Soothing heartbeat rhythm for calming connection",
+        "bpm": 60,
+        "pattern": "Lub-dub pattern every 1 second",
+        "events": "Two pulses: 0.0s (intensity 0.6) and 0.15s (intensity 0.4), repeat",
+        "heart_animation": "Hearts pulse in perfect synchronization, soft pink glow",
+        "unlock_level": 10,
+        "premium": false
+      }
+    },
+  
+    "haptic_accessibility": {
+      "intensity_scaling": {
+        "default": 1.0,
+        "light": 0.5,
+        "strong": 1.5,
+        "setting_location": "Settings → Accessibility → Haptic Strength"
+      },
+      "visual_alternatives": {
+        "for_no_haptics": "Heart characters perform exaggerated animations to compensate",
+        "screen_flash": "Optional subtle screen flash on each haptic event",
+        "sound_effects": "Optional soft chime sounds matching haptic rhythm"
+      }
+    }
+  }
+  

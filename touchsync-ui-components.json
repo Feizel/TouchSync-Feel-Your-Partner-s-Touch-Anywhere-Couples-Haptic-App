@@ -1,0 +1,336 @@
+{
+    "file_purpose": "Detailed UI component specifications with heart characters for Cursor AI",
+    
+    "home_screen": {
+      "file_name": "HomeView.swift",
+      "layout": "VStack with ScrollView",
+      "components_top_to_bottom": [
+        {
+          "component": "StatusBar",
+          "type": "HStack",
+          "contains": ["Partner availability bubble (glassmorphism)", "Freeze tokens count ❄️ x2", "Current level badge 🛡️"],
+          "height": "44pt"
+        },
+        {
+          "component": "StreakCounter",
+          "type": "HStack",
+          "font": "SF Pro Display Bold 28pt",
+          "color": "#8B0000",
+          "format": "[Fire Icon] 45 Day Streak ❄️ x2",
+          "icon_file": "streak_fire.png (from generated set)",
+          "padding": "16pt vertical"
+        },
+        {
+          "component": "HeartCharactersPair",
+          "type": "Custom SwiftUI View",
+          "layout": "HStack with both hearts and connection line",
+          "user_heart": {
+            "color": "#8B0000 gradient",
+            "position": "left",
+            "animation": "Gentle pulse, reacts to touches",
+            "customization": "Hairstyle, accessories based on user settings"
+          },
+          "partner_heart": {
+            "color": "#B76E79 gradient",
+            "position": "right",
+            "animation": "Syncs with partner's real-time status",
+            "customization": "Partner's chosen customization"
+          },
+          "connection_line": {
+            "visual": "Glowing amber line (#FF6B35) between hearts",
+            "thickness": "Varies with connection strength (0-100%)",
+            "animation": "Pulses when touches exchanged"
+          },
+          "size": "200x150pt",
+          "background": "Subtle glassmorphism container"
+        },
+        {
+          "component": "ConnectionMeter",
+          "type": "VStack with progress bar",
+          "display": "Connection Strength: ████░░ 80%",
+          "progress_bar": {
+            "height": "8pt",
+            "corner_radius": "4pt",
+            "fill_gradient": "Crimson → Rose Gold → Amber",
+            "background": "rgba(255,255,255,0.1)"
+          },
+          "message": {
+            "text": "Your bond is very strong 💗",
+            "font": "SF Pro Text Medium 15pt",
+            "color": "Based on percentage (see master spec)"
+          }
+        },
+        {
+          "component": "DailyGoalsChecklist",
+          "type": "VStack with 3 goal rows",
+          "goals": [
+            {
+              "name": "Touch Goal",
+              "display": "💌 5/5 Touches Sent",
+              "icon": "goal_touch.png",
+              "completion_checkmark": "✅ or ⬜"
+            },
+            {
+              "name": "Response Goal",
+              "display": "💬 3/3 Responses",
+              "icon": "goal_response.png",
+              "completion_checkmark": "✅ or ⬜"
+            },
+            {
+              "name": "Quality Goal",
+              "display": "⏰ Quality Time: 45/60 sec",
+              "icon": "goal_quality.png",
+              "completion_checkmark": "✅ or ⬜"
+            }
+          ],
+          "perfect_day_banner": {
+            "condition": "All 3 goals complete",
+            "visual": "Perfect Day icon (perfect_day_celebration.png) with sparkle animation",
+            "text": "Perfect Day! All goals complete 🎉",
+            "background": "Glassmorphism with rainbow gradient"
+          }
+        },
+        {
+          "component": "LevelDisplay",
+          "type": "HStack",
+          "format": "Level 23 [Shield Icon] ⭐ 2,340 XP",
+          "icon_file": "level_badge.png (from generated set)",
+          "progress_bar": "Visual bar showing XP to next level",
+          "tap_action": "Navigate to level details modal"
+        },
+        {
+          "component": "HapticCanvas",
+          "type": "Custom UIViewRepresentable wrapping UIView",
+          "size": "Full width x 400pt height",
+          "background": "#1C1C1E",
+          "border": "1pt #4A0E4E",
+          "corner_radius": "20pt",
+          "touch_tracking": "UITouch events converted to CGPath",
+          "heart_watchers": "Small versions of heart characters in top corners watching",
+          "clear_gesture": "Single tap anywhere",
+          "hold_hands_gesture": "Double tap",
+          "real_time_sync": "Firebase Realtime Database path: /touches/{sessionId}/{touchId}"
+        },
+        {
+          "component": "GestureLibrary",
+          "type": "HStack with 5 buttons",
+          "button_style": {
+            "size": "60x60pt circles",
+            "background": "Glassmorphism with corresponding gesture color",
+            "icon_files": [
+              "gesture_squeeze_hand.png",
+              "gesture_kiss.png",
+              "gesture_hug.png",
+              "gesture_tap.png",
+              "gesture_heart_trace.png"
+            ],
+            "haptic_preview": "Long press triggers haptic pattern preview"
+          }
+        }
+      ]
+    },
+  
+    "widget_view": {
+      "file_name": "TouchSyncWidget.swift",
+      "framework": "WidgetKit",
+      "sizes": ["systemSmall", "systemMedium"],
+      "systemSmall_layout": {
+        "background": "Glassmorphism: 15% opacity, 20px blur, #FF6B35 gradient",
+        "content": [
+          "Small partner heart character (rose gold) in top corner",
+          "Last gesture icon (48pt) in center",
+          "Time ago text: '5m ago' (SF Pro Text 13pt)",
+          "'Touch Back' button (Link with App Intent)"
+        ]
+      },
+      "systemMedium_layout": {
+        "background": "Glassmorphism: 15% opacity, 20px blur, #FF6B35 gradient",
+        "content": [
+          "Both heart characters (small versions) at top",
+          "HStack with 3 recent touches (icon + time)",
+          "Partner status indicator with availability bubble",
+          "Divider line (#FFFFFF 20% opacity)",
+          "'Open TouchSync' button"
+        ]
+      },
+      "timeline_update": "Every 5 minutes via TimelineProvider",
+      "deep_link": "touchsync://sendTouch?gestureId={id}"
+    },
+  
+    "touch_history_view": {
+      "file_name": "TouchHistoryView.swift",
+      "layout": "LazyVStack in ScrollView",
+      "card_component": {
+        "structure": "VStack inside glassmorphism container",
+        "glassmorphism": {
+          "opacity": "15%",
+          "blur": "20px",
+          "background": "LinearGradient from #FF6B35 to #8B0000",
+          "border": "0.5px rgba(255,255,255,0.2)",
+          "shadow": "0px 8px 32px rgba(139,0,0,0.3)",
+          "corner_radius": "16pt"
+        },
+        "content": [
+          "HStack: Gesture icon (32pt) + Gesture name (SF Pro Display 18pt Semibold) + small heart character reaction",
+          "Text: Timestamp formatted as 'Today, 2:34 PM' or 'Yesterday, 5:12 PM'",
+          "HStack: 'Replay' button + 'Favorite' star button",
+          "Badge: 'You sent' or 'Partner sent' with appropriate heart color"
+        ],
+        "replay_button_action": "Triggers saved CHHapticPattern playback, heart character animates",
+        "favorite_button_action": "Saves to Core Data favorites table, star fills with animation"
+      },
+      "empty_state": {
+        "visual": "Both heart characters looking sad or waiting",
+        "text": "No touches yet today.\nSend [Partner] your first touch!",
+        "cta_button": "Send Touch (navigates to HomeView canvas)"
+      }
+    },
+  
+    "level_up_modal": {
+      "file_name": "LevelUpView.swift",
+      "trigger": "When user crosses XP threshold to next level",
+      "animation_sequence": [
+        "1. Modal appears with scale effect (0.8 to 1.0, spring animation)",
+        "2. XP star icon (xp_star.png) bursts into particles using SpriteKit",
+        "3. Heart characters perform celebration animation (jump, sparkles)",
+        "4. Haptic: CHHapticPattern with ascending intensity pulses",
+        "5. Sound: Soft chime (AVAudioPlayer, celebration.wav)",
+        "6. Text animates: 'Level {level} Unlocked!' with typewriter effect",
+        "7. Show heart character upgrade (new hairstyle or accessory unlocked)",
+        "8. Show unlocked feature card with icon and description",
+        "9. Dismiss button: 'Awesome!' fades in after 2 seconds"
+      ],
+      "unlocked_feature_display": {
+        "heart_character_visual": "Shows before/after of heart character with new customization",
+        "icon": "Corresponding feature icon 64pt (e.g., hairstyle icon)",
+        "title": "Feature name (SF Pro Display Bold 24pt)",
+        "description": "2-line explanation (SF Pro Text 15pt)",
+        "background": "Glassmorphism with #8B0000 gradient",
+        "celebration_effect": "Confetti particles with heart shapes"
+      }
+    },
+
+    "settings_view": {
+      "file_name": "SettingsView.swift",
+      "sections": [
+        {
+          "header": "Connection",
+          "rows": [
+            {"label": "Daily Touch Goal", "control": "Stepper (3-10)", "default": 5},
+            {"label": "Availability Status", "control": "Segmented picker (Available/Busy/Sleeping)", "icons": "status icons from set"},
+            {"label": "Partner Info", "control": "Navigation link to partner profile", "shows": "Partner heart character"}
+          ]
+        },
+        {
+          "header": "Heart Characters",
+          "rows": [
+            {"label": "Customize My Heart", "control": "Navigation link", "preview": "Shows current customization"},
+            {"label": "Hairstyle", "control": "Picker", "unlock_level": 10, "premium": false},
+            {"label": "Accessories", "control": "Multi-select", "unlock_level": 25, "premium": false},
+            {"label": "Color Tint", "control": "Color picker", "unlock_level": 50, "premium": true}
+          ]
+        },
+        {
+          "header": "Notifications",
+          "rows": [
+            {"label": "Touch Received", "control": "Toggle", "default": true, "icon": "notification bell"},
+            {"label": "Connection Reminder (9 PM)", "control": "Toggle", "default": true},
+            {"label": "Streak Protection Alert", "control": "Toggle", "default": true},
+            {"label": "Daily Summary", "control": "Toggle", "default": false, "premium": true}
+          ]
+        },
+        {
+          "header": "Subscription",
+          "rows": [
+            {"label": "Current Plan", "control": "Text display (Free/Premium)", "badge": "Premium crown icon if premium"},
+            {"label": "Upgrade to Premium", "control": "Navigation link", "badge": "Most Popular", "icon": "premium_crown.png"}
+          ]
+        },
+        {
+          "header": "Privacy & Security",
+          "rows": [
+            {"label": "End-to-End Encryption", "control": "Info text: Enabled", "icon": "lock icon"},
+            {"label": "Biometric Lock", "control": "Toggle (Face ID/Touch ID)", "default": false},
+            {"label": "Export My Data", "control": "Button", "action": "Trigger data export"}
+          ]
+        },
+        {
+          "header": "About",
+          "rows": [
+            {"label": "Version", "control": "Text (1.0.0)"},
+            {"label": "Terms of Service", "control": "Navigation link"},
+            {"label": "Privacy Policy", "control": "Navigation link"},
+            {"label": "Contact Support", "control": "Button (opens email)"}
+          ]
+        }
+      ]
+    },
+
+    "heart_customization_view": {
+      "file_name": "HeartCustomizationView.swift",
+      "layout": "VStack with live preview at top",
+      "components": [
+        {
+          "component": "LivePreview",
+          "description": "Large animated heart character with current customization",
+          "size": "200x200pt",
+          "background": "Glassmorphism container",
+          "animation": "Heart performs idle animations with current customization"
+        },
+        {
+          "component": "CustomizationTabs",
+          "tabs": ["Hairstyles", "Accessories", "Colors"],
+          "hairstyles_section": {
+            "options": ["None", "Short", "Long", "Curly", "Bun", "Hat"],
+            "display": "Grid of icons showing each hairstyle",
+            "unlock_requirement": "Level 10",
+            "premium": false
+          },
+          "accessories_section": {
+            "options": ["Glasses", "Bow", "Headband", "Scarf", "Crown"],
+            "display": "Grid of icons, multi-select allowed",
+            "unlock_requirement": "Level 25",
+            "premium": false
+          },
+          "colors_section": {
+            "options": "Color picker allowing tint variations within crimson/rose gold range",
+            "unlock_requirement": "Level 50",
+            "premium": true,
+            "preview": "Real-time color update on heart character"
+          }
+        },
+        {
+          "component": "SaveButton",
+          "style": "Large prominent button with glassmorphism",
+          "action": "Save customization to Firestore and CloudKit",
+          "confirmation": "Heart character does celebration animation"
+        }
+      ]
+    },
+
+    "perfect_day_celebration_modal": {
+      "file_name": "PerfectDayCelebrationView.swift",
+      "trigger": "When all 3 daily goals completed",
+      "fullscreen": true,
+      "animation_sequence": [
+        "1. Screen dims to 60% opacity",
+        "2. Perfect day icon (perfect_day_celebration.png) appears with scale animation",
+        "3. Heart characters embrace in center with sparkle particle effects",
+        "4. Text appears: 'Perfect Day!' in large bold font",
+        "5. Subtext: 'Your bond is unbreakable today! 💝'",
+        "6. XP earned indicator: '+50 XP' flies to level badge",
+        "7. Haptic celebration pattern plays",
+        "8. Confetti falls from top (SpriteKit particles)",
+        "9. Share button appears: 'Share Your Perfect Day'",
+        "10. Dismiss button: 'Continue' after 3 seconds"
+      ],
+      "visual_style": {
+        "background": "Radial gradient from center (amber → crimson → charcoal)",
+        "heart_characters": "3D rendered, larger than normal, embracing pose",
+        "particles": "Heart-shaped confetti in crimson, rose gold, amber colors",
+        "glassmorphism": "Achievement card with frosted glass effect"
+      }
+    }
+}
+
+          

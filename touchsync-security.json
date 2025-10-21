@@ -1,0 +1,322 @@
+{
+    "touchsync_security_specifications": {
+      "overview": {
+        "security_model": "Zero-trust architecture with end-to-end encryption for haptic touch data",
+        "compliance_targets": ["GDPR", "POPIA (South Africa)", "CCPA", "Apple App Store Guidelines"],
+        "sensitive_data_categories": [
+          "Haptic touch patterns and drawings",
+          "Voice recordings (60s max per question)",
+          "Relationship timeline data",
+          "Location data (if anniversary reminders use location)",
+          "Partner linkage information"
+        ],
+        "threat_model": "Protect against unauthorized access, man-in-the-middle attacks, data breaches, account takeover"
+      },
+  
+      "authentication": {
+        "method": "Firebase Authentication with email/password",
+        "password_requirements": {
+          "minimum_length": 8,
+          "require_uppercase": true,
+          "require_lowercase": true,
+          "require_number": true,
+          "require_special_character": false,
+          "common_password_check": true
+        },
+        "multi_factor_authentication": {
+          "status": "Optional for MVP, Required for Premium (Phase 2)",
+          "methods": ["SMS OTP", "Email OTP", "Authenticator app (TOTP)"],
+          "enforcement": "Required for account recovery and premium features"
+        },
+        "session_management": {
+          "token_type": "Firebase ID Token (JWT)",
+          "token_expiration": "1 hour (auto-refresh)",
+          "refresh_token_rotation": true,
+          "max_concurrent_sessions": 2,
+          "session_invalidation_triggers": ["Password change", "Account deletion", "Manual logout"]
+        },
+        "partner_linking": {
+          "invite_code_format": "6-character alphanumeric (e.g., H3K9M2)",
+          "invite_code_expiration": "24 hours",
+          "verification_required": "Both partners must accept link before data sync",
+          "unlinking_process": "Requires confirmation from both partners OR 7-day waiting period"
+        }
+      },
+  
+      "data_encryption": {
+        "data_at_rest": {
+          "firebase_firestore": {
+            "encryption": "AES-256 (Google-managed keys)",
+            "backup_encryption": "Automatic with Google Cloud Key Management"
+          },
+          "core_data_local": {
+            "encryption": "iOS Data Protection API (NSFileProtectionComplete)",
+            "keychain_storage": "For sensitive tokens and credentials",
+            "encryption_class": "CompleteUntilFirstUserAuthentication"
+          }
+        },
+        "data_in_transit": {
+          "firebase_realtime_database": {
+            "protocol": "WSS (WebSocket Secure) over TLS 1.3",
+            "certificate_pinning": "Enabled for Firebase domains",
+            "minimum_tls_version": "1.2"
+          },
+          "api_calls": {
+            "protocol": "HTTPS only",
+            "tls_version": "1.3 preferred, 1.2 minimum",
+            "certificate_validation": "Strict"
+          }
+        },
+        "end_to_end_encryption": {
+          "haptic_touch_data": {
+            "encryption_method": "AES-256-GCM",
+            "key_generation": "Per-couple unique encryption key",
+            "key_storage": "Encrypted with device keychain",
+            "key_exchange": "Diffie-Hellman key agreement during partner linking",
+            "implementation": "CryptoKit framework (Apple native)"
+          },
+          "voice_recordings": {
+            "encryption_method": "AES-256-GCM before upload",
+            "key_management": "Same per-couple key as haptic data",
+            "storage": "Firebase Cloud Storage with encryption at rest",
+            "deletion": "Automatic after 90 days (configurable)"
+          },
+          "touch_drawings": {
+            "encryption": "Path data encrypted before transmission",
+            "real_time_decryption": "On-device using shared couple key",
+            "storage": "Encrypted in Firestore, decrypted only by authorized partner"
+          }
+        }
+      },
+  
+      "firebase_security_rules": {
+        "realtime_database_rules": {
+          "purpose": "Restrict touch data access to only linked couples",
+          "rules": {
+            "touches": {
+              "sessionId": {
+                "read": "auth != null && (data.child('user1Id').val() == auth.uid || data.child('user2Id').val() == auth.uid)",
+                "write": "auth != null && (data.child('user1Id').val() == auth.uid || data.child('user2Id').val() == auth.uid)"
+              }
+            },
+            "users": {
+              "userId": {
+                "read": "auth != null && (auth.uid == $userId || root.child('users').child(auth.uid).child('partnerId').val() == $userId)",
+                "write": "auth != null && auth.uid == $userId"
+              }
+            },
+            "presence": {
+              "userId": {
+                "read": "auth != null",
+                "write": "auth != null && auth.uid == $userId"
+              }
+            }
+          }
+        },
+        "firestore_security_rules": {
+          "purpose": "Protect user profiles, subscriptions, and relationship data",
+          "rules": {
+            "users": {
+              "userId": {
+                "allow_read": "request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.partnerId == userId)",
+                "allow_write": "request.auth != null && request.auth.uid == userId"
+              }
+            },
+            "subscriptions": {
+              "subscriptionId": {
+                "allow_read": "request.auth != null && resource.data.userId == request.auth.uid",
+                "allow_write": "request.auth != null && request.resource.data.userId == request.auth.uid"
+              }
+            },
+            "touches_archive": {
+              "touchId": {
+                "allow_read": "request.auth != null && (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid)",
+                "allow_write": "request.auth != null && request.resource.data.senderId == request.auth.uid"
+              }
+            }
+          }
+        },
+        "cloud_storage_rules": {
+          "purpose": "Protect voice recordings and media uploads",
+          "rules": {
+            "voice_recordings": {
+              "path": "voice_recordings/{userId}/{recordingId}",
+              "allow_read": "request.auth != null && (request.auth.uid == userId || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.partnerId == userId)",
+              "allow_write": "request.auth != null && request.auth.uid == userId && request.resource.size < 5 * 1024 * 1024",
+              "allow_delete": "request.auth != null && request.auth.uid == userId"
+            }
+          }
+        }
+      },
+  
+      "api_security": {
+        "firebase_cloud_functions": {
+          "authentication": "Require Firebase Auth token in Authorization header",
+          "rate_limiting": {
+            "touches_send": "100 requests per minute per user",
+            "voice_upload": "10 uploads per hour per user",
+            "partner_invite": "5 invites per day per user"
+          },
+          "input_validation": {
+            "haptic_pattern_validation": "Reject patterns >10 seconds or >100 events",
+            "voice_recording_validation": "Max 60 seconds, MP4/M4A format only, <5MB",
+            "touch_path_validation": "Max 1000 points per drawing"
+          },
+          "security_headers": {
+            "Content-Security-Policy": "default-src 'self'; script-src 'self'",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+          }
+        }
+      },
+  
+      "privacy_protection": {
+        "data_minimization": {
+          "principle": "Collect only data necessary for core functionality",
+          "practices": [
+            "No location tracking unless user explicitly enables anniversary reminders",
+            "No contact list access",
+            "No camera/photo library access unless user uploads custom avatar",
+            "No microphone access outside voice question recording"
+          ]
+        },
+        "data_retention": {
+          "touch_history": {
+            "free_tier": "7 days auto-deletion",
+            "premium_tier": "Unlimited retention with user control",
+            "deletion_on_request": "Immediate upon user request"
+          },
+          "voice_recordings": {
+            "default_retention": "90 days",
+            "user_configurable": "30/60/90/365 days or unlimited (premium)",
+            "deletion_on_unlinking": "Automatic within 24 hours"
+          },
+          "account_data": {
+            "after_account_deletion": "30-day grace period, then permanent deletion",
+            "backup_retention": "90 days in encrypted backup, then purged"
+          }
+        },
+        "user_rights": {
+          "GDPR_compliance": [
+            "Right to access: Export all personal data via in-app feature",
+            "Right to erasure: Account deletion with full data purge",
+            "Right to rectification: Edit profile and relationship data",
+            "Right to data portability: JSON export of all user data",
+            "Right to object: Opt-out of analytics (Firebase Analytics disable)"
+          ],
+          "POPIA_compliance": [
+            "Explicit consent for data processing during onboarding",
+            "Clear privacy policy in English and Afrikaans",
+            "Information officer contact: privacy@touchsync.app",
+            "Data breach notification within 72 hours"
+          ]
+        },
+        "third_party_data_sharing": {
+          "policy": "Zero third-party data sharing except essential service providers",
+          "service_providers": [
+            {
+              "name": "Firebase/Google Cloud",
+              "purpose": "Backend infrastructure and authentication",
+              "data_shared": "User ID, email, encrypted touch data",
+              "dpa_in_place": true
+            },
+            {
+              "name": "RevenueCat",
+              "purpose": "Subscription management",
+              "data_shared": "User ID, subscription status, transaction IDs",
+              "dpa_in_place": true
+            },
+            {
+              "name": "Apple App Store",
+              "purpose": "Payment processing",
+              "data_shared": "Minimal - handled by StoreKit 2",
+              "dpa_in_place": true
+            }
+          ],
+          "no_advertising_networks": true,
+          "no_analytics_beyond_firebase": true
+        }
+      },
+  
+      "vulnerability_management": {
+        "dependency_management": {
+          "automated_scanning": "Dependabot/Renovate for Swift Package Manager",
+          "update_frequency": "Weekly security patches, monthly minor updates",
+          "critical_vulnerability_response": "Patch within 48 hours"
+        },
+        "code_security": {
+          "static_analysis": "SwiftLint with security-focused rules",
+          "secrets_management": "No hardcoded secrets, use Firebase RemoteConfig or environment variables",
+          "obfuscation": "Minimal due to Swift compilation, focus on API key security"
+        },
+        "penetration_testing": {
+          "frequency": "Annual third-party pen test",
+          "scope": "API endpoints, authentication, encryption implementation",
+          "remediation_sla": "Critical: 7 days, High: 30 days, Medium: 90 days"
+        }
+      },
+  
+      "incident_response": {
+        "security_incident_plan": {
+          "detection": "Firebase Security Monitoring + manual user reports",
+          "containment": "Immediate Firebase rule update, affected user notification",
+          "eradication": "Patch deployment, password reset enforcement if needed",
+          "recovery": "Service restoration, data integrity verification",
+          "communication": "Email notification within 72 hours (GDPR/POPIA compliance)"
+        },
+        "data_breach_response": {
+          "notification_timeline": "Within 72 hours to authorities, immediate to affected users",
+          "notification_channels": ["Email", "In-app alert", "Website banner"],
+          "breach_log": "Maintained in secure internal system for compliance audit"
+        }
+      },
+  
+      "ios_specific_security": {
+        "app_transport_security": {
+          "enforce_https": true,
+          "allow_insecure_loads": false,
+          "minimum_tls_version": "TLSv1.2"
+        },
+        "keychain_usage": {
+          "stored_items": [
+            "Firebase Auth tokens (kSecAttrAccessibleAfterFirstUnlock)",
+            "Couple encryption key (kSecAttrAccessibleWhenUnlockedThisDeviceOnly)",
+            "Biometric authentication state"
+          ],
+          "access_control": "kSecAccessControlBiometryCurrentSet for sensitive operations"
+        },
+        "biometric_authentication": {
+          "feature": "Optional unlock app with Face ID/Touch ID",
+          "fallback": "Device passcode",
+          "implementation": "LocalAuthentication framework",
+          "policy": "LAPolicy.deviceOwnerAuthenticationWithBiometrics"
+        },
+        "app_sandbox": {
+          "entitlements": [
+            "Push Notifications",
+            "Network Client",
+            "Keychain Sharing (for app group with widget)"
+          ],
+          "no_unrestricted_network_access": "All connections to Firebase domains only"
+        }
+      },
+  
+      "compliance_documentation": {
+        "privacy_policy": {
+          "url": "https://touchsync.app/privacy",
+          "last_updated": "Before App Store submission",
+          "languages": ["English", "Afrikaans (for South Africa)"]
+        },
+        "terms_of_service": {
+          "url": "https://touchsync.app/terms",
+          "includes": "Account termination policy, acceptable use policy, DMCA"
+        },
+        "data_processing_agreement": {
+          "required_for": "Enterprise customers (Phase 3)",
+          "template": "GDPR-compliant DPA template"
+        }
+      }
+    }
+  }
+  

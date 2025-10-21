@@ -1,0 +1,344 @@
+{
+    "file_purpose": "Development sprint plan for MVP launch with heart character system",
+  
+    "sprint_1_week_1": {
+      "goal": "Core infrastructure, authentication, and database setup",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Firebase project setup",
+          "files": ["GoogleService-Info.plist", "FirebaseConfig.swift"],
+          "includes": ["Authentication", "Realtime Database", "Cloud Functions", "FCM", "Firestore", "Cloud Storage"],
+          "estimated_hours": 6
+        },
+        {
+          "task": "Security rules implementation",
+          "files": ["firestore.rules", "database.rules.json", "storage.rules"],
+          "reference": "See touchsync-security.json",
+          "estimated_hours": 4
+        },
+        {
+          "task": "Core Data stack implementation",
+          "files": ["PersistenceController.swift", "Touch+CoreDataClass.swift", "UserProfile+CoreDataClass.swift", "DailyProgress+CoreDataClass.swift"],
+          "estimated_hours": 8
+        },
+        {
+          "task": "User authentication flow",
+          "files": ["AuthenticationView.swift", "AuthManager.swift"],
+          "features": ["Email/password signup", "Partner invite code generation", "Partner linking with verification"],
+          "estimated_hours": 12
+        },
+        {
+          "task": "Basic navigation structure",
+          "files": ["ContentView.swift", "TabView with Home/History/Settings"],
+          "estimated_hours": 4
+        }
+      ],
+      "total_hours": 34,
+      "deliverable": "Users can sign up, invite partner, link accounts securely, and see empty app shell"
+    },
+  
+    "sprint_2_week_1_2": {
+      "goal": "Heart character system and visual design foundation",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Heart character rendering",
+          "files": ["HeartCharacter.swift", "HeartAnimations.swift"],
+          "features": ["Basic 3D heart shapes", "Idle pulse animation", "Color gradients (crimson, rose gold)", "Glassmorphism container"],
+          "estimated_hours": 16
+        },
+        {
+          "task": "Heart character pair view",
+          "files": ["HeartCharactersPairView.swift"],
+          "features": ["User heart + partner heart side by side", "Connection line between hearts", "Reactive animations to touches"],
+          "estimated_hours": 12
+        },
+        {
+          "task": "Connection meter system",
+          "files": ["ConnectionMeterView.swift", "ConnectionMeterManager.swift"],
+          "features": ["Progress bar visualization", "Daily goals tracking (3 goals)", "Message generation based on percentage"],
+          "estimated_hours": 10
+        },
+        {
+          "task": "Asset integration",
+          "files": ["Assets.xcassets with all icon files"],
+          "includes": ["App icon (1024x1024 + all sizes)", "Gamification icon set (fire, freeze, star, badge, celebration)", "Placeholder gesture icons"],
+          "estimated_hours": 4
+        }
+      ],
+      "total_hours": 42,
+      "deliverable": "Heart characters display on home screen with connection meter, visual system established"
+    },
+  
+    "sprint_3_week_2": {
+      "goal": "Haptic system and real-time drawing",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Core Haptics implementation",
+          "files": ["HapticsManager.swift"],
+          "features": ["Engine setup", "5 preset gesture patterns", "Heart character animation sync", "Error handling"],
+          "reference": "See touchsync-haptics-implementation.json",
+          "estimated_hours": 14
+        },
+        {
+          "task": "Drawing canvas with haptics",
+          "files": ["DrawingCanvasView.swift", "TouchTrackingView.swift"],
+          "features": ["UITouch tracking", "Real-time haptic feedback", "Path rendering", "Heart character watching animation"],
+          "estimated_hours": 16
+        },
+        {
+          "task": "Firebase Realtime sync",
+          "files": ["RealtimeManager.swift", "EncryptionManager.swift"],
+          "features": ["Path data sync", "Sub-100ms latency", "E2E encryption", "Connection state handling"],
+          "reference": "See touchsync-security.json for encryption specs",
+          "estimated_hours": 14
+        }
+      ],
+      "total_hours": 44,
+      "deliverable": "Users can draw and partner feels haptics in real-time, heart characters react to touches"
+    },
+  
+    "sprint_4_week_3": {
+      "goal": "Gesture library and touch history",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Gesture library UI",
+          "files": ["GestureLibraryView.swift"],
+          "features": ["5 preset gesture buttons with icons", "One-tap send", "Haptic preview on long press", "Heart character animation for each gesture"],
+          "estimated_hours": 10
+        },
+        {
+          "task": "Touch history timeline",
+          "files": ["TouchHistoryView.swift", "TouchHistoryCard.swift"],
+          "features": ["Scrollable list with glassmorphism cards", "Replay function", "Favorites", "Heart character reaction icons"],
+          "estimated_hours": 12
+        },
+        {
+          "task": "Core Data persistence",
+          "files": ["TouchRepository.swift"],
+          "features": ["Save touches (encrypted)", "Fetch by date", "Favorite management", "7-day auto-deletion for free tier"],
+          "estimated_hours": 8
+        }
+      ],
+      "total_hours": 30,
+      "deliverable": "Users can send preset gestures and view touch history with favorites"
+    },
+  
+    "sprint_5_week_3_4": {
+      "goal": "Streak system, gamification, and daily goals",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Daily goals tracking logic",
+          "files": ["GoalsManager.swift", "DailyProgress+CoreDataClass.swift"],
+          "features": ["Touch goal tracking", "Response goal tracking", "Quality goal tracking", "Daily reset at midnight", "Perfect day detection"],
+          "estimated_hours": 12
+        },
+        {
+          "task": "Streak tracking system",
+          "files": ["StreakManager.swift"],
+          "features": ["Daily streak counter with fire icon", "Milestone detection (7, 30, 100, 365 days)", "Freeze token system", "CloudKit sync"],
+          "estimated_hours": 10
+        },
+        {
+          "task": "XP and leveling system",
+          "files": ["LevelingManager.swift", "LevelUpView.swift"],
+          "features": ["XP calculation", "Level progression with relationship tiers", "Level up animation with heart character upgrade", "Feature unlock tracking"],
+          "estimated_hours": 12
+        },
+        {
+          "task": "Perfect day celebration",
+          "files": ["PerfectDayCelebrationView.swift"],
+          "features": ["Fullscreen modal with heart embrace animation", "Particle effects", "XP bonus display", "Share functionality"],
+          "estimated_hours": 8
+        }
+      ],
+      "total_hours": 42,
+      "deliverable": "Complete gamification system with streaks, levels, and perfect day celebrations"
+    },
+  
+    "sprint_6_week_4": {
+      "goal": "Widgets and notifications",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Home screen widget",
+          "files": ["TouchSyncWidget.swift", "WidgetTimelineProvider.swift"],
+          "features": ["Small widget (last touch + heart character)", "Medium widget (3 touches + both hearts + status)", "Deep linking", "Glassmorphism styling"],
+          "estimated_hours": 16
+        },
+        {
+          "task": "Push notifications",
+          "files": ["NotificationManager.swift"],
+          "features": ["Touch received notifications", "Connection reminder at 9 PM", "Streak protection alerts", "Rich notifications with heart icons"],
+          "estimated_hours": 10
+        },
+        {
+          "task": "Status indicators",
+          "files": ["AvailabilityStatusView.swift"],
+          "features": ["Available/Busy/Sleeping toggle", "Partner status display with heart expression", "Firebase sync"],
+          "estimated_hours": 6
+        }
+      ],
+      "total_hours": 32,
+      "deliverable": "Widgets functional with heart characters, notifications working with proper engagement triggers"
+    },
+  
+    "sprint_7_week_4_5": {
+      "goal": "Onboarding and heart customization",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "5-step onboarding flow",
+          "files": ["OnboardingView.swift", "Step1EmotionalHook.swift", "Step2FirstTouch.swift", "Step3CustomizeHearts.swift", "Step4Tutorial.swift", "Step5GoalSetting.swift"],
+          "features": ["Heart characters introduction", "Interactive haptic demo", "Heart customization preview", "Gesture tutorial", "Goal picker"],
+          "estimated_hours": 18
+        },
+        {
+          "task": "Heart customization system",
+          "files": ["HeartCustomizationView.swift", "CustomizationManager.swift"],
+          "features": ["Live preview", "Hairstyle picker (Level 10)", "Accessory picker (Level 25)", "Color tint (Level 50, premium)", "CloudKit sync"],
+          "estimated_hours": 14
+        }
+      ],
+      "total_hours": 32,
+      "deliverable": "Complete onboarding with heart character customization"
+    },
+  
+    "sprint_8_week_5": {
+      "goal": "Subscription system and premium features",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Subscription paywall",
+          "files": ["PaywallView.swift", "SubscriptionManager.swift"],
+          "features": ["StoreKit 2 integration", "Free vs Premium comparison with heart character benefits", "Purchase flow", "RevenueCat integration"],
+          "estimated_hours": 14
+        },
+        {
+          "task": "Free tier limitations",
+          "files": ["FeatureGateManager.swift"],
+          "features": ["3 touches/day limit", "7-day history limit", "Upgrade prompts at gates", "Premium feature locks with heart icon"],
+          "estimated_hours": 8
+        },
+        {
+          "task": "Settings and account management",
+          "files": ["SettingsView.swift", "AccountView.swift"],
+          "features": ["All settings sections", "Data export", "Account deletion", "Privacy controls", "Biometric lock"],
+          "estimated_hours": 10
+        }
+      ],
+      "total_hours": 32,
+      "deliverable": "Subscription system live with proper gating, full settings implementation"
+    },
+  
+    "sprint_9_week_6": {
+      "goal": "Polish, testing, and App Store preparation",
+      "priority": "P0 - Critical Path",
+      "tasks": [
+        {
+          "task": "Design polish",
+          "includes": ["Glassmorphism refinement", "Heart character animation smoothing", "Color consistency check", "Accessibility (VoiceOver, Dynamic Type)", "Dark mode validation"],
+          "estimated_hours": 20
+        },
+        {
+          "task": "Bug fixes and edge cases",
+          "includes": ["Network offline handling", "Haptics permission denied flow", "Partner not online states", "Encryption key recovery", "Widget update failures"],
+          "estimated_hours": 16
+        },
+        {
+          "task": "Security audit",
+          "includes": ["Firebase rules testing", "Encryption verification", "Auth flow security review", "Data leak prevention"],
+          "reference": "See touchsync-security.json",
+          "estimated_hours": 8
+        },
+        {
+          "task": "App Store assets",
+          "includes": ["8 screenshots per size class showing heart characters", "App preview video (30 seconds)", "Description copy", "Metadata keywords", "Privacy questionnaire"],
+          "estimated_hours": 10
+        },
+        {
+          "task": "Beta testing (TestFlight)",
+          "includes": ["20 beta couples (40 users)", "Feedback collection via in-app survey", "Critical bug fixes", "Performance monitoring"],
+          "estimated_hours": 12
+        }
+      ],
+      "total_hours": 66,
+      "deliverable": "MVP ready for App Store submission with heart character system fully polished"
+    },
+  
+    "mvp_feature_list": {
+      "included": [
+        "Real-time haptic drawing canvas with heart character reactions",
+        "5 preset gesture library with unique animations",
+        "Touch history with replay and favorites (glassmorphism cards)",
+        "Heart character pair system with connection meter",
+        "Daily goals checklist (3 goals: touch, response, quality)",
+        "Perfect day celebration with heart embrace animation",
+        "Streak counter with fire icon and freeze token system",
+        "XP and leveling with 4 relationship tiers (New Love → Soulmates)",
+        "Heart character customization (hairstyles, accessories, colors)",
+        "Home screen widget (small + medium) with heart characters",
+        "Push notifications with rich heart icons",
+        "Freemium with subscription ($11.99/mo, $59.99/yr)",
+        "5-step onboarding with heart character introduction",
+        "Partner invite/linking with E2E encryption",
+        "Availability status toggle (Available/Busy/Sleeping)",
+        "Settings with privacy controls and biometric lock"
+      ],
+      "post_mvp_features": [
+        "Voice-answered deep questions (Sprint 10)",
+        "Custom gesture creator (Sprint 11)",
+        "Advanced sensory patterns (ocean, rainfall) (Sprint 12)",
+        "Relationship insights/analytics dashboard (Sprint 13)",
+        "Anniversary tracking with heart character costumes (Sprint 14)",
+        "Shared photo memories integration (Sprint 15)",
+        "iPad app with larger canvas (Sprint 16)"
+      ]
+    },
+  
+    "success_metrics": {
+      "week_1": {
+        "signups": 100,
+        "paired_couples": 50,
+        "touches_sent": 500,
+        "perfect_days": 10
+      },
+      "month_1": {
+        "total_users": 1000,
+        "active_couples": 300,
+        "premium_conversions": 30,
+        "mrr": "$360",
+        "avg_daily_touches_per_couple": 8,
+        "heart_customizations": 150
+      },
+      "month_3": {
+        "total_users": 5000,
+        "active_couples": 1500,
+        "premium_conversions": 225,
+        "mrr": "$2700",
+        "app_store_rating": "4.5+",
+        "avg_streak_length": "18 days",
+        "perfect_days_achieved": 4500
+      }
+    },
+  
+    "technical_debt_tracking": {
+      "known_limitations": [
+        "Widget updates limited to 5 minutes (iOS constraint)",
+        "Haptic patterns limited to 30 seconds (Core Haptics constraint)",
+        "Real-time drawing path limited to 1000 points (performance)",
+        "Heart character animations not using Lottie yet (Phase 2 improvement)"
+      ],
+      "future_optimizations": [
+        "Implement Lottie for smoother heart character animations",
+        "Add WebRTC for lower latency than Firebase (sub-50ms)",
+        "Optimize Firestore queries with better indexing",
+        "Add Redis cache layer for frequently accessed data"
+      ]
+    }
+  }
+  

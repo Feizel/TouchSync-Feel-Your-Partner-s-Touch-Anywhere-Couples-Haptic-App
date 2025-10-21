@@ -1,0 +1,524 @@
+{
+    "project": {
+      "name": "TouchSync",
+      "version": "1.0.0",
+      "platform": "iOS",
+      "minimum_ios_version": "16.0",
+      "target_devices": ["iPhone"],
+      "tagline": "Feel them from anywhere",
+      "description": "Premium haptic intimacy app for long-distance couples combining real-time touch with relationship growth tracking using adorable heart characters",
+      "target_market": "South Africa (Cape Town-Johannesburg LDR couples), expanding globally",
+      "category": "Lifestyle - Couples & Relationships",
+      "unique_value_proposition": "Only couples app combining real-time haptic touch intimacy with heart character-based relationship growth tracking and voice-based deep questions",
+      "app_icon": "Embracing hearts in glassmorphism container (Logo 2) with dark charcoal background"
+    },
+    
+    "competitive_positioning": {
+      "competitors": {
+        "paired": {
+          "strength": "Expert-backed daily questions, research credibility",
+          "weakness": "No haptic/physical touch, no character system",
+          "price": "$14.99/month"
+        },
+        "obimy": {
+          "strength": "Haptic touch gestures, customizable avatars",
+          "weakness": "No structured relationship growth, flat 2D characters",
+          "price": "$2.99/month"
+        },
+        "between": {
+          "strength": "Private couple space, memory timeline",
+          "weakness": "No real-time intimacy or haptics, no gamification",
+          "price": "$1.99/month"
+        }
+      },
+      "touchsync_differentiators": [
+        "Premium 3D heart characters with glassmorphism aesthetic (not flat 2D)",
+        "Haptic drawing canvas with real-time partner feedback",
+        "Heart character-based connection system (not abstract rings)",
+        "Voice-answered deep questions (60-second recordings)",
+        "Streak freeze system with anxiety reduction",
+        "Premium sensory patterns (nature sounds as haptics)"
+      ]
+    },
+  
+    "core_features": {
+      "1_haptic_drawing_canvas": {
+        "priority": "P0 - MVP Critical",
+        "description": "Real-time drawing canvas where finger movements translate to haptic vibrations on partner's phone",
+        "technical_requirements": [
+          "UIKit touch tracking with CoreGraphics path rendering",
+          "Firebase Realtime Database for sub-100ms latency",
+          "Core Haptics API for vibration pattern generation",
+          "Canvas clear: single tap, Hold hands: double tap (continuous pulse)"
+        ],
+        "visual_design": "Full-screen dark canvas with subtle crimson border, heart characters watch from top corners",
+        "user_flow": "Open app → Draw with finger → Partner feels each stroke instantly as vibration → Tap to clear"
+      },
+  
+      "2_haptic_gesture_library": {
+        "priority": "P0 - MVP Critical",
+        "description": "5 preset touch patterns users can send with one tap",
+        "gestures": [
+          {
+            "name": "Squeeze Hand",
+            "haptic_pattern": "CHHapticPattern with 3 short pulses (0.2s, 0.8 intensity)",
+            "icon_file": "gesture_squeeze_hand.png",
+            "color": "#8B0000"
+          },
+          {
+            "name": "Forehead Kiss",
+            "haptic_pattern": "Single long pulse (1.0s, 0.4 intensity, gentle)",
+            "icon_file": "gesture_kiss.png",
+            "color": "#B76E79"
+          },
+          {
+            "name": "Hug",
+            "haptic_pattern": "Sustained vibration (3.0s, 0.6 intensity wave)",
+            "icon_file": "gesture_hug.png",
+            "color": "#FF6B35"
+          },
+          {
+            "name": "Shoulder Tap",
+            "haptic_pattern": "2 quick taps (0.1s each, 1.0 intensity)",
+            "icon_file": "gesture_tap.png",
+            "color": "#4A0E4E"
+          },
+          {
+            "name": "Heart Trace",
+            "haptic_pattern": "Heart shape rhythm (custom pattern, 2s duration)",
+            "icon_file": "gesture_heart_trace.png",
+            "color": "#8B0000"
+          }
+        ],
+        "technical_requirements": [
+          "Core Haptics CHHapticEngine",
+          "Preset patterns stored as JSON in Bundle",
+          "One-tap send via Firebase Cloud Functions"
+        ]
+      },
+  
+      "3_home_screen_widget": {
+        "priority": "P0 - MVP Critical",
+        "description": "Live widget showing last touch received with timestamp and heart character preview",
+        "widget_types": [
+          {
+            "size": "systemSmall",
+            "displays": "Last gesture icon + time ago + small heart character + 'Touch Back' button",
+            "background": "Glassmorphism with #FF6B35 glow"
+          },
+          {
+            "size": "systemMedium",
+            "displays": "Both heart characters + last 3 touches with timestamps + partner status indicator"
+          }
+        ],
+        "technical_requirements": [
+          "WidgetKit with TimelineProvider",
+          "App Intent for 'Touch Back' button deep link",
+          "Background refresh every 5 minutes",
+          "Glassmorphism effect: 15% opacity, 20px blur, #FF6B35 background"
+        ]
+      },
+  
+      "4_availability_status": {
+        "priority": "P0 - MVP Critical",
+        "description": "Simple toggle showing partner's current availability with visual heart character state",
+        "states": [
+          {
+            "status": "Available",
+            "color": "#00C853",
+            "icon_file": "status_available.png",
+            "heart_expression": "Happy, glowing",
+            "meaning": "Ready to receive touches and respond"
+          },
+          {
+            "status": "Busy",
+            "color": "#FFB300",
+            "icon_file": "status_busy.png",
+            "heart_expression": "Focused, with clock",
+            "meaning": "Will see touches but may not respond immediately"
+          },
+          {
+            "status": "Sleeping",
+            "color": "#4A0E4E",
+            "icon_file": "status_sleeping.png",
+            "heart_expression": "Peaceful, with moon",
+            "meaning": "Do not disturb - touches queued for morning"
+          }
+        ],
+        "technical_requirements": [
+          "SwiftUI Toggle with three-state picker",
+          "Firebase Realtime Database sync",
+          "Widget shows partner status with last updated timestamp"
+        ]
+      },
+  
+      "5_touch_history_timeline": {
+        "priority": "P1 - Launch Feature",
+        "description": "Scrollable daily log of all touches exchanged with glassmorphism cards",
+        "display_format": {
+          "layout": "Vertical timeline with glassmorphism cards",
+          "card_content": "Gesture icon + time sent/received + 'Replay' button + heart character reaction",
+          "replay_function": "Tap to feel the haptic pattern again",
+          "favorite_function": "Star icon to save special touches"
+        },
+        "technical_requirements": [
+          "Core Data persistence with timestamps",
+          "LazyVStack for performance with 100+ items",
+          "Archive after 30 days (premium: unlimited storage)"
+        ]
+      },
+  
+      "6_heart_character_system": {
+        "priority": "P0 - MVP Critical",
+        "description": "Two adorable 3D heart characters representing the couple, replacing ring system",
+        "visual_design": {
+          "primary_display": "Home screen top section shows both hearts",
+          "user_heart": "Deep crimson (#8B0000) gradient, left position",
+          "partner_heart": "Rose gold (#B76E79) gradient, right position",
+          "connection_visualization": "Glowing line or hands holding between hearts",
+          "animation_states": [
+            "Idle: Gentle pulse/breathing animation",
+            "Active touching: Hearts lean closer with glow",
+            "Receiving touch: Partner heart brightens and bounces",
+            "Perfect day: Hearts embrace with sparkle particles"
+          ]
+        },
+        "customization": {
+          "free_tier": "Basic heart shapes with dot eyes and smile",
+          "premium_unlocks": [
+            "Level 10: Hairstyles (5 options)",
+            "Level 25: Accessories (glasses, bows, hats)",
+            "Level 50: Color tint variations",
+            "Level 100: Seasonal outfits and special effects"
+          ]
+        },
+        "technical_requirements": [
+          "SwiftUI Canvas with custom Shape rendering",
+          "Lottie animations for complex movements",
+          "CloudKit sync for customization across devices"
+        ]
+      },
+  
+      "7_connection_meter_system": {
+        "priority": "P0 - MVP Critical",
+        "description": "Visual progress bar showing daily connection goals with heart characters",
+        "display": {
+          "location": "Below heart characters on home screen",
+          "visualization": "Hearts holding hands with progress bar bridge between them",
+          "progress_fill": "Gradient from deep crimson → rose gold → soft amber",
+          "percentage_display": "Connection Strength: 80% with descriptive text"
+        },
+        "daily_goals": [
+          {
+            "goal_name": "Touch Goal",
+            "description": "Send 5 meaningful touches",
+            "adjustable_range": "3-10 touches",
+            "icon_file": "goal_touch.png",
+            "completion_effect": "Heart glow increases"
+          },
+          {
+            "goal_name": "Response Goal",
+            "description": "Respond to 3 partner touches within 2 hours",
+            "target": 3,
+            "icon_file": "goal_response.png",
+            "completion_effect": "Connection line brightens"
+          },
+          {
+            "goal_name": "Quality Goal",
+            "description": "One 30+ second sustained touch session",
+            "target": 1,
+            "icon_file": "goal_quality.png",
+            "completion_effect": "Hearts move closer together"
+          }
+        ],
+        "perfect_day": {
+          "condition": "All three goals completed",
+          "visual": "Hearts embrace with sparkle animation (perfect_day_celebration.png icon)",
+          "reward": "+50 XP, achievement badge, haptic celebration",
+          "message": "Perfect Day! Your bond is strongest today 💕"
+        },
+        "connection_messages": {
+          "0_25_percent": "Your bond needs attention 💙",
+          "26_50_percent": "You're connecting nicely 💜",
+          "51_75_percent": "Your bond is strong 💖",
+          "76_99_percent": "Your bond is very strong 💗",
+          "100_percent": "Your bond is unbreakable today! 💝"
+        }
+      },
+  
+      "8_streak_system": {
+        "priority": "P0 - MVP Critical",
+        "description": "Daily streak counter with milestone rewards and freeze tokens",
+        "display": {
+          "location": "Top of home screen below status bar",
+          "format": "🔥 45 Day Streak",
+          "icon_file": "streak_fire.png (from generated icon set)",
+          "size": "Large, prominent headline font"
+        },
+        "milestones": [
+          {"days": 7, "badge": "Bronze Heart", "reward": "1 Freeze Token", "icon": "milestone_bronze.png"},
+          {"days": 30, "badge": "Silver Heart", "reward": "Custom gesture slot unlocked", "icon": "milestone_silver.png"},
+          {"days": 100, "badge": "Gold Heart", "reward": "Advanced sensory patterns", "icon": "milestone_gold.png"},
+          {"days": 365, "badge": "Diamond Heart", "reward": "Lifetime Premium 50% discount", "icon": "milestone_diamond.png"}
+        ],
+        "freeze_system": {
+          "description": "Protect streak from missed days",
+          "icon_file": "freeze_token.png (from generated icon set)",
+          "earning": "1 freeze token per 7-day streak",
+          "usage": "Auto-applies when both partners miss completing any goal",
+          "display": "❄️ icon with count next to streak",
+          "max_tokens": 5
+        },
+        "technical_requirements": [
+          "User Defaults for streak count with daily check",
+          "CloudKit sync to prevent data loss",
+          "Push notification at 9 PM if goals not complete"
+        ]
+      },
+  
+      "9_leveling_system": {
+        "priority": "P1 - Launch Feature",
+        "description": "XP-based progression with relationship milestone tiers",
+        "xp_earning": [
+          {"action": "Send touch", "xp": 10},
+          {"action": "Respond to touch within 2h", "xp": 15},
+          {"action": "Close all goals (Perfect Day)", "xp": 50},
+          {"action": "30+ second quality touch", "xp": 25},
+          {"action": "7-day streak milestone", "xp": 100}
+        ],
+        "relationship_tiers": [
+          {
+            "tier_name": "New Love",
+            "level_range": "1-10",
+            "icon_file": "level_badge.png (from generated icon set)",
+            "heart_visual": "Small simple hearts",
+            "unlocks": ["Basic 5 gestures", "Touch history 7 days"]
+          },
+          {
+            "tier_name": "Deepening Bond",
+            "level_range": "11-25",
+            "icon_file": "tier_deepening.png",
+            "heart_visual": "Hearts grow larger, more detailed",
+            "unlocks": ["Custom gesture recorder", "Hairstyle customization", "Voice questions"]
+          },
+          {
+            "tier_name": "Strong Connection",
+            "level_range": "26-50",
+            "icon_file": "tier_strong.png",
+            "heart_visual": "Hearts can hold hands, rich animations",
+            "unlocks": ["Nature haptic patterns", "Accessories", "Unlimited history"]
+          },
+          {
+            "tier_name": "Soulmates",
+            "level_range": "51-100",
+            "icon_file": "tier_soulmates.png",
+            "heart_visual": "Hearts merge into shared glow during sessions",
+            "unlocks": ["All features", "Special anniversary animations", "Premium insights"]
+          }
+        ],
+        "level_up_animation": {
+          "visual": "XP star icon (xp_star.png) bursts into particles",
+          "haptic": "CHHapticPattern celebration (ascending intensity)",
+          "sound": "Soft chime (celebration.wav)",
+          "modal": "Shows new tier name, heart character upgrade, unlocked features",
+          "duration": "3.0 seconds"
+        },
+        "display": {
+          "home_screen": "Level 23 🛡️ ⭐ 2,340 XP",
+          "progress_bar": "Visual bar showing XP progress to next level"
+        }
+      }
+    },
+  
+    "design_system": {
+      "color_palette": {
+        "primary": {
+          "deep_crimson": "#8B0000",
+          "usage": "User heart character, primary interactions, passionate moments"
+        },
+        "secondary": {
+          "rose_gold": "#B76E79",
+          "usage": "Partner heart character, warmth, secondary UI elements"
+        },
+        "accent": {
+          "soft_amber": "#FF6B35",
+          "usage": "Connection glow, CTAs, highlights, active states"
+        },
+        "trust_layer": {
+          "deep_purple": "#4A0E4E",
+          "usage": "Premium features, sleeping status, quality goal"
+        },
+        "background": {
+          "rich_charcoal": "#1C1C1E",
+          "charcoal_gradient_end": "#2C2C2E",
+          "usage": "Dark mode base across entire app, app icon background"
+        }
+      },
+  
+      "glassmorphism_specs": {
+        "touch_history_cards": {
+          "opacity": "15%",
+          "blur": "20px",
+          "background": "#FF6B35 gradient",
+          "border": "0.5px solid rgba(255, 255, 255, 0.2)",
+          "shadow": "0px 8px 32px rgba(139, 0, 0, 0.3)"
+        },
+        "availability_bubble": {
+          "opacity": "25%",
+          "blur": "20px",
+          "border": "0.5px solid white"
+        },
+        "gesture_palette": {
+          "opacity": "18%",
+          "blur": "20px",
+          "background": "Animated gradient underneath"
+        },
+        "widget_background": {
+          "opacity": "15%",
+          "blur": "20px",
+          "background": "#FF6B35 with soft gradient"
+        },
+        "heart_character_container": {
+          "opacity": "20%",
+          "blur": "25px",
+          "background": "Gradient matching character colors",
+          "border": "1px solid rgba(255, 255, 255, 0.15)"
+        }
+      },
+  
+      "typography": {
+        "headline": "SF Pro Display Bold, 32pt",
+        "title": "SF Pro Display Semibold, 22pt",
+        "body": "SF Pro Text Regular, 17pt",
+        "caption": "SF Pro Text Regular, 13pt",
+        "streak_counter": "SF Pro Display Bold, 28pt",
+        "connection_message": "SF Pro Text Medium, 15pt"
+      },
+  
+      "icon_assets": {
+        "app_icon": "embracing_hearts_glass_1024.png (Logo 2 with dark background)",
+        "gamification_set": {
+          "streak_fire": "streak_fire.png (from generated set)",
+          "freeze_token": "freeze_token.png (from generated set)",
+          "xp_star": "xp_star.png (from generated set)",
+          "level_badge": "level_badge.png (from generated set)",
+          "perfect_day": "perfect_day_celebration.png (from generated set)"
+        },
+        "heart_characters": {
+          "user_heart_base": "heart_character_crimson.png",
+          "partner_heart_base": "heart_character_rosegold.png",
+          "customization_assets": "Stored in Assets.xcassets/HeartCustomization/"
+        }
+      },
+  
+      "haptic_feedback": {
+        "light_tap": "UIImpactFeedbackGenerator.style = .light",
+        "medium_tap": "UIImpactFeedbackGenerator.style = .medium",
+        "success": "UINotificationFeedbackGenerator.notificationType = .success",
+        "custom_patterns": "Core Haptics CHHapticEngine with CHHapticPattern"
+      }
+    },
+  
+    "technical_architecture": {
+      "framework": "SwiftUI (iOS 16+)",
+      "language": "Swift 5.9+",
+      "backend": "Firebase (Realtime Database, Cloud Functions, Authentication, Cloud Messaging, Firestore)",
+      "data_persistence": "Core Data for local, CloudKit for sync",
+      "real_time_communication": "Firebase Realtime Database (sub-100ms latency requirement)",
+      "haptics": "Core Haptics framework with CHHapticEngine",
+      "widgets": "WidgetKit with TimelineProvider and App Intents",
+      "notifications": "Firebase Cloud Messaging + UNUserNotificationCenter",
+      "analytics": "Firebase Analytics + RevenueCat for subscription tracking",
+      "authentication": "Firebase Authentication with email/password",
+      "security": "See touchsync-security.json for full specifications"
+    },
+  
+    "monetization": {
+      "model": "Freemium with subscription",
+      "free_tier": {
+        "touches_per_day": 3,
+        "gestures_available": 5,
+        "history_retention": "7 days",
+        "heart_customization": "Basic shapes only",
+        "features": ["Basic connection meter", "Widget access", "Streak counter"]
+      },
+      "premium_tier": {
+        "price_monthly": "$11.99",
+        "price_annual": "$59.99",
+        "effective_annual_monthly": "$4.99",
+        "unlocks": [
+          "Unlimited touches daily",
+          "Custom gesture creator (Level 10+)",
+          "Heart character customization (hairstyles, accessories)",
+          "Advanced sensory patterns (Level 50+)",
+          "Unlimited touch history archive",
+          "Relationship insights & analytics",
+          "Voice question library (500+ questions)",
+          "Priority customer support",
+          "Special anniversary animations"
+        ]
+      },
+      "positioning": "Premium tier between obimy ($2.99) and Paired ($14.99) - signals quality without overpricing"
+    },
+  
+    "onboarding_flow": {
+      "step_1_emotional_hook": {
+        "duration": "15 seconds",
+        "visual": "Heart characters reaching toward each other through frosted glass",
+        "headline": "Feel them from anywhere",
+        "subtext": "Long distance doesn't mean distant hearts",
+        "cta_button": "Connect with [Partner's Name]",
+        "action": "Generate invite code, send via SMS/WhatsApp"
+      },
+      "step_2_first_touch": {
+        "duration": "30 seconds",
+        "instruction": "Draw a heart on your screen",
+        "feedback": "User feels haptic feedback matching their strokes, heart characters watch and react",
+        "reveal_text": "Now imagine [Partner] feeling this exact sensation on their phone. That's TouchSync.",
+        "purpose": "Immediate 'wow' moment - instant sensory understanding"
+      },
+      "step_3_customize_hearts": {
+        "duration": "20 seconds",
+        "instruction": "Meet your connection hearts!",
+        "interaction": "Choose which heart is you (crimson or rose gold)",
+        "preview": "Hearts introduce themselves with bounce animation",
+        "purpose": "Establish emotional connection with characters"
+      },
+      "step_4_gesture_tutorial": {
+        "duration": "30 seconds",
+        "instruction": "Try these gestures on [Partner]:",
+        "gestures_shown": ["Squeeze Hand", "Forehead Kiss", "Hug"],
+        "interaction": "User taps each, feels haptic, sees heart character reaction",
+        "progress_bar": "2/3 complete - motivates completion"
+      },
+      "step_5_goal_setting": {
+        "duration": "15 seconds",
+        "question": "How connected do you want to stay?",
+        "options": [
+          {"label": "Casual", "touches_per_day": 3},
+          {"label": "Connected (recommended)", "touches_per_day": 5},
+          {"label": "Inseparable", "touches_per_day": 10}
+        ],
+        "visual": "Connection meter fills with selection, hearts move closer",
+        "final_cta": "You're ready. Send your first touch to [Partner]."
+      }
+    },
+  
+    "app_store_metadata": {
+      "title": "TouchSync - Feel Them Close",
+      "subtitle": "Haptic Touch for Couples",
+      "keywords": ["couples", "long distance", "relationship", "touch", "haptic", "intimacy", "love", "connection", "ldr"],
+      "description_hook": "Long distance doesn't mean emotionally distant. TouchSync is the first couples app that lets you physically feel your partner through haptic touch while growing your relationship with adorable heart characters.",
+      "screenshots_priority": [
+        "1. Heart characters embracing with connection meter",
+        "2. Haptic drawing canvas in action",
+        "3. Widget on iPhone home screen showing heart characters",
+        "4. Gesture library with 5 preset options",
+        "5. Touch history timeline with glassmorphism",
+        "6. Level up celebration with heart character upgrade",
+        "7. Perfect day achievement with sparkle animation",
+        "8. Streak milestone with fire icon and freeze tokens"
+      ]
+    }
+  }
+  
