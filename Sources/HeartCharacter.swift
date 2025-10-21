@@ -1,57 +1,82 @@
 import SwiftUI
 
 struct HeartCharacter: View {
-    let color: Color
-    let isUser: Bool
-    let isActive: Bool
-    let customization: HeartCustomization
+    let size: CGFloat
+    let primaryColor: Color
+    let secondaryColor: Color
+    let isAnimating: Bool
+    let accessory: HeartAccessory
+    let expression: HeartExpression
+    
+    init(
+        size: CGFloat = 100,
+        primaryColor: Color = ColorPalette.crimson,
+        secondaryColor: Color = ColorPalette.roseGold,
+        isAnimating: Bool = false,
+        accessory: HeartAccessory = .none,
+        expression: HeartExpression = .happy
+    ) {
+        self.size = size
+        self.primaryColor = primaryColor
+        self.secondaryColor = secondaryColor
+        self.isAnimating = isAnimating
+        self.accessory = accessory
+        self.expression = expression
+    }
     
     @State private var pulseScale: CGFloat = 1.0
     @State private var glowOpacity: Double = 0.3
     
     var body: some View {
         ZStack {
-            // Glassmorphism container
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
-                .frame(width: 100, height: 100)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
-            
-            // Heart shape
+            // Heart shape with gradient
             HeartShape()
                 .fill(
                     LinearGradient(
-                        colors: [color, color.opacity(0.7)],
+                        colors: [primaryColor, secondaryColor],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 60, height: 60)
+                .frame(width: size * 0.6, height: size * 0.6)
                 .scaleEffect(pulseScale)
-                .shadow(color: color.opacity(glowOpacity), radius: 10)
+                .shadow(color: primaryColor.opacity(glowOpacity), radius: size * 0.1)
             
-            // Customization overlay
-            if let hairstyle = customization.hairstyle {
-                Text(hairstyle.emoji)
-                    .font(.title2)
-                    .offset(y: -25)
+            // Expression eyes
+            HStack(spacing: size * 0.1) {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: size * 0.08, height: size * 0.08)
+                    .offset(y: expression.eyeOffset)
+                    .scaleEffect(expression.eyeScale)
+                
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: size * 0.08, height: size * 0.08)
+                    .offset(y: expression.eyeOffset)
+                    .scaleEffect(expression.eyeScale)
             }
+            .offset(y: -size * 0.1)
             
-            if let accessory = customization.accessory {
-                Text(accessory.emoji)
-                    .font(.caption)
-                    .offset(x: 20, y: -10)
+            // Accessory overlay
+            if accessory != .none {
+                Image(systemName: accessory.icon)
+                    .font(.system(size: size * 0.2))
+                    .foregroundColor(.white)
+                    .offset(y: -size * 0.25)
             }
         }
+        .frame(width: size, height: size)
         .onAppear {
-            startPulseAnimation()
+            if isAnimating {
+                startPulseAnimation()
+            }
         }
-        .onChange(of: isActive) { _, newValue in
+        .onChange(of: isAnimating) { _, newValue in
             if newValue {
-                triggerActiveAnimation()
+                startPulseAnimation()
+            } else {
+                stopAnimation()
             }
         }
     }
@@ -74,6 +99,13 @@ struct HeartCharacter: View {
                 pulseScale = 1.1
                 glowOpacity = 0.6
             }
+        }
+    }
+    
+    private func stopAnimation() {
+        withAnimation(.easeOut(duration: 0.3)) {
+            pulseScale = 1.0
+            glowOpacity = 0.3
         }
     }
 }
@@ -116,54 +148,24 @@ struct HeartShape: Shape {
     }
 }
 
-struct HeartCustomization {
-    var hairstyle: Hairstyle?
-    var accessory: Accessory?
-    var colorTint: Color?
-    
-    enum Hairstyle: CaseIterable {
-        case short, long, curly, bun, hat
-        
-        var emoji: String {
-            switch self {
-            case .short: return "✂️"
-            case .long: return "💇‍♀️"
-            case .curly: return "🌀"
-            case .bun: return "🥨"
-            case .hat: return "🎩"
-            }
-        }
-    }
-    
-    enum Accessory: CaseIterable {
-        case glasses, bow, headband, scarf, crown
-        
-        var emoji: String {
-            switch self {
-            case .glasses: return "👓"
-            case .bow: return "🎀"
-            case .headband: return "👑"
-            case .scarf: return "🧣"
-            case .crown: return "👑"
-            }
-        }
-    }
-}
-
 #Preview {
     HStack(spacing: 40) {
         HeartCharacter(
-            color: Color(red: 139/255, green: 0/255, blue: 0/255),
-            isUser: true,
-            isActive: false,
-            customization: HeartCustomization()
+            size: 100,
+            primaryColor: ColorPalette.crimson,
+            secondaryColor: ColorPalette.roseGold,
+            isAnimating: true,
+            accessory: .none,
+            expression: .happy
         )
         
         HeartCharacter(
-            color: Color(red: 183/255, green: 110/255, blue: 121/255),
-            isUser: false,
-            isActive: true,
-            customization: HeartCustomization(hairstyle: .curly, accessory: .bow)
+            size: 100,
+            primaryColor: ColorPalette.deepPurple,
+            secondaryColor: ColorPalette.roseGold,
+            isAnimating: true,
+            accessory: .crown,
+            expression: .happy
         )
     }
     .padding()

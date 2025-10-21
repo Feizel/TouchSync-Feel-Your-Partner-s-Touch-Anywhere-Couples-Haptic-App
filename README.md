@@ -2,8 +2,6 @@
 
 ---
 
-## App Store-Optimized Description
-
 **TouchSync: Feel Your Partner’s Touch Anywhere – Haptic Connection for Couples Long Distance & Intimacy**
 
 TouchSync is the premium iOS app for couples who want to stay intimately connected, no matter the distance. Experience real-time haptic touches—from squeezes to hugs, kisses, and custom patterns—delivered through adorable animated heart characters, all within a beautifully minimal, glassmorphic interface. Track your relationship’s emotional growth daily, celebrate perfect days, and level up your unique heart mascot as your bond deepens. TouchSync reinvents physical presence for modern love.

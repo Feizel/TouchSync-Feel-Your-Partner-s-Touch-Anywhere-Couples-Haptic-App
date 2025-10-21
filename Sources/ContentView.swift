@@ -2,10 +2,14 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var authManager: AuthManager
+    @StateObject private var onboardingManager = OnboardingManager()
     
     var body: some View {
         Group {
-            if authManager.isAuthenticated {
+            if !onboardingManager.isCompleted {
+                OnboardingView()
+                    .environmentObject(onboardingManager)
+            } else if authManager.isAuthenticated {
                 MainTabView()
             } else {
                 AuthenticationView()

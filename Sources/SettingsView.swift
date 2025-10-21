@@ -6,6 +6,16 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
+                Section("Customization") {
+                    NavigationLink(destination: HeartCustomizationView()) {
+                        HStack {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(ColorPalette.crimson)
+                            Text("Customize Heart")
+                        }
+                    }
+                }
+                
                 Section("Connection") {
                     HStack {
                         Text("Daily Touch Goal")
@@ -14,12 +24,8 @@ struct SettingsView: View {
                             .foregroundColor(.secondary)
                     }
                     
-                    HStack {
-                        Text("Availability Status")
-                        Spacer()
-                        Text("Available")
-                            .foregroundColor(.green)
-                    }
+                    AvailabilityStatusView()
+                        .listRowInsets(EdgeInsets())
                     
                     if let partnerId = authManager.partnerId {
                         HStack {
