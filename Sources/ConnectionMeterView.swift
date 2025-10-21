@@ -221,10 +221,14 @@ class DailyGoalsManager: ObservableObject {
     @Published var touchGoalProgress: Int = 0
     @Published var responseGoalProgress: Int = 0
     @Published var qualityGoalProgress: Int = 0
+    @Published var showPerfectDayCelebration = false
     
     let touchGoalTarget: Int = 5
     let responseGoalTarget: Int = 3
     let qualityGoalTarget: Int = 60 // seconds
+    
+    private let streakManager = StreakManager()
+    private let levelingManager = LevelingManager()
     
     var isTouchGoalComplete: Bool {
         touchGoalProgress >= touchGoalTarget
@@ -239,7 +243,23 @@ class DailyGoalsManager: ObservableObject {
     }
     
     var isPerfectDay: Bool {
-        isTouchGoalComplete && isResponseGoalComplete && isQualityGoalComplete
+        let perfectDay = isTouchGoalComplete && isResponseGoalComplete && isQualityGoalComplete
+        
+        // Check if this is a new perfect day
+        if perfectDay && !UserDefaults.standard.bool(forKey: "perfectDayToday") {
+            UserDefaults.standard.set(true, forKey: "perfectDayToday")
+            
+            // Award XP and update streak
+            levelingManager.addXP(XPAction.perfectDay.xpValue, for: .perfectDay)
+            streakManager.checkDailyStreak(isPerfectDay: true)
+            
+            // Show celebration
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                showPerfectDayCelebration = true
+            }
+        }
+        
+        return perfectDay
     }
     
     var connectionPercentage: Double {
@@ -254,17 +274,31 @@ class DailyGoalsManager: ObservableObject {
     func incrementTouchGoal() {
         if touchGoalProgress < touchGoalTarget {
             touchGoalProgress += 1
+            levelingManager.addXP(XPAction.sendTouch.xpValue, for: .sendTouch)
         }
     }
     
     func incrementResponseGoal() {
         if responseGoalProgress < responseGoalTarget {
             responseGoalProgress += 1
+            levelingManager.addXP(XPAction.respondToTouch.xpValue, for: .respondToTouch)
         }
     }
     
     func updateQualityGoal(seconds: Int) {
+        let oldProgress = qualityGoalProgress
         qualityGoalProgress = min(qualityGoalTarget, seconds)
+        
+        if oldProgress < qualityGoalTarget && qualityGoalProgress >= qualityGoalTarget {
+            levelingManager.addXP(XPAction.qualityTouch.xpValue, for: .qualityTouch)
+        }
+    }
+    
+    func resetDailyGoals() {
+        touchGoalProgress = 0
+        responseGoalProgress = 0
+        qualityGoalProgress = 0
+        UserDefaults.standard.set(false, forKey: "perfectDayToday")
     }
 }
 

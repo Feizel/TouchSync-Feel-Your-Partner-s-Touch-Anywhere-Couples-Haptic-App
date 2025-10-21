@@ -4,6 +4,7 @@ import Firebase
 @main
 struct TouchSyncApp: App {
     @StateObject private var authManager = AuthManager()
+    @StateObject private var notificationManager = NotificationManager.shared
     
     init() {
         FirebaseApp.configure()
@@ -11,8 +12,18 @@ struct TouchSyncApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authManager)
+            DeepLinkNavigationView {
+                ContentView()
+                    .environmentObject(authManager)
+                    .environmentObject(notificationManager)
+            }
+            .onOpenURL { url in
+                DeepLinkManager.shared.handleURL(url)
+            }
+            .task {
+                await notificationManager.requestPermission()
+                notificationManager.setupNotificationCategories()
+            }
         }
     }
 }

@@ -7,33 +7,12 @@ struct HomeView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Status Bar
-                    HStack {
-                        Text("Available")
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(20)
-                        
-                        Spacer()
-                        
-                        Text("❄️ x2")
-                            .font(.caption)
-                        
-                        Text("🛡️ Level 1")
-                            .font(.caption)
-                    }
-                    .padding(.horizontal)
+                    // Availability Status Bar
+                    AvailabilityStatusView()
+                        .padding(.horizontal)
                     
                     // Streak Counter
-                    HStack {
-                        Text("🔥")
-                            .font(.title)
-                        Text("0 Day Streak")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color(red: 139/255, green: 0/255, blue: 0/255))
-                    }
+                    StreakDisplayView()
                     
                     // Heart Characters
                     HeartCharactersPairView()
@@ -42,6 +21,9 @@ struct HomeView: View {
                     // Connection Meter with Daily Goals
                     ConnectionMeterView()
                         .padding(.horizontal)
+                        .fullScreenCover(isPresented: .constant(false)) {
+                            PerfectDayCelebrationView(isPresented: .constant(false), xpEarned: 50)
+                        }
                     
                     // Touch Canvas
                     VStack(spacing: 12) {

@@ -67,6 +67,20 @@ class AuthManager: ObservableObject {
         partnerId = partnerUserId
     }
     
+    func acceptPartnerInvite(_ inviteCode: String) async throws {
+        try await linkPartner(inviteCode: inviteCode)
+    }
+    
+    func updateFCMToken(_ token: String) async {
+        guard let userId = currentUser?.uid else { return }
+        
+        let db = Firestore.firestore()
+        try? await db.collection("users").document(userId).updateData([
+            "fcmToken": token,
+            "tokenUpdatedAt": Timestamp()
+        ])
+    }
+    
     private func createUserProfile(userId: String, email: String) async {
         let db = Firestore.firestore()
         let inviteCode = generateInviteCode()
@@ -77,7 +91,8 @@ class AuthManager: ObservableObject {
             "createdAt": Timestamp(),
             "currentStreak": 0,
             "totalXP": 0,
-            "currentLevel": 1
+            "currentLevel": 1,
+            "fcmToken": ""
         ]
         
         try? await db.collection("users").document(userId).setData(userData)

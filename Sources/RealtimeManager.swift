@@ -74,7 +74,7 @@ class RealtimeManager: ObservableObject {
         ]
         
         if let encryptedData = encryptTouchData(gestureData) {
-            sessionRef.child("gestures").childByAutoId().setValue(encryptedData)
+            sessionRef.child("events").childByAutoId().setValue(encryptedData)
         }
         
         // Save to local storage
@@ -104,6 +104,12 @@ class RealtimeManager: ObservableObject {
             // Play haptic feedback
             HapticsManager.shared.playRealtimeTouch(intensity: intensity)
             
+            // Send notification if app is in background
+            NotificationManager.shared.sendTouchReceivedNotification(
+                gesture: "Drawing Touch",
+                from: "Partner"
+            )
+            
             // Save received touch to local storage
             Task { @MainActor in
                 let touchRepo = TouchRepository()
@@ -121,6 +127,32 @@ class RealtimeManager: ObservableObject {
                 name: .partnerTouchReceived,
                 object: ["point": point, "intensity": intensity]
             )
+        }
+        
+        // Handle gesture touches
+        if let gestureType = decryptedData["gestureType"] as? String {
+            // Play haptic for gesture
+            if let gesture = HapticsManager.shared.presetGestures.first(where: { $0.name == gestureType }) {
+                HapticsManager.shared.playGesture(gesture)
+            }
+            
+            // Send notification
+            NotificationManager.shared.sendTouchReceivedNotification(
+                gesture: gestureType,
+                from: "Partner"
+            )
+            
+            // Save to local storage
+            Task { @MainActor in
+                let touchRepo = TouchRepository()
+                touchRepo.saveTouch(
+                    gestureType: gestureType,
+                    senderId: "partner",
+                    receiverId: "user",
+                    intensity: nil,
+                    drawingPath: nil
+                )
+            }
         }
     }
     
