@@ -28,10 +28,10 @@
 - [x] Heart character animation sync with haptics
 
 ### Sprint 4: Gesture Library & Touch History
-- [ ] Gesture library UI (5 preset buttons with haptic preview)
-- [ ] Touch history timeline (glassmorphism cards, replay function)
-- [ ] Core Data persistence (encrypted touch storage, favorites)
-- [ ] Heart character reaction animations
+- [x] Gesture library UI (5 preset buttons with haptic preview)
+- [x] Touch history timeline (glassmorphism cards, replay function)
+- [x] Core Data persistence (encrypted touch storage, favorites)
+- [x] Heart character reaction animations
 
 ### Sprint 5: Gamification System
 - [ ] Daily goals tracking (Touch/Response/Quality goals)

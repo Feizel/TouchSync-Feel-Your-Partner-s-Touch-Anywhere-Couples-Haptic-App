@@ -50,6 +50,18 @@ class RealtimeManager: ObservableObject {
         if let encryptedData = encryptTouchData(touchData) {
             sessionRef.child("events").childByAutoId().setValue(encryptedData)
         }
+        
+        // Save drawing touch to local storage
+        Task { @MainActor in
+            let touchRepo = TouchRepository()
+            touchRepo.saveTouch(
+                gestureType: "Drawing",
+                senderId: userId,
+                receiverId: "partner",
+                intensity: intensity,
+                drawingPath: "\(point.x),\(point.y)"
+            )
+        }
     }
     
     func sendGesture(_ gesture: HapticGesture, userId: String) {
@@ -63,6 +75,18 @@ class RealtimeManager: ObservableObject {
         
         if let encryptedData = encryptTouchData(gestureData) {
             sessionRef.child("gestures").childByAutoId().setValue(encryptedData)
+        }
+        
+        // Save to local storage
+        Task { @MainActor in
+            let touchRepo = TouchRepository()
+            touchRepo.saveTouch(
+                gestureType: gesture.name,
+                senderId: userId,
+                receiverId: "partner", // Would be actual partner ID
+                intensity: nil,
+                drawingPath: nil
+            )
         }
     }
     
@@ -79,6 +103,18 @@ class RealtimeManager: ObservableObject {
             
             // Play haptic feedback
             HapticsManager.shared.playRealtimeTouch(intensity: intensity)
+            
+            // Save received touch to local storage
+            Task { @MainActor in
+                let touchRepo = TouchRepository()
+                touchRepo.saveTouch(
+                    gestureType: "Drawing",
+                    senderId: "partner",
+                    receiverId: "user",
+                    intensity: intensity,
+                    drawingPath: "\(point.x),\(point.y)"
+                )
+            }
             
             // Notify UI
             NotificationCenter.default.post(

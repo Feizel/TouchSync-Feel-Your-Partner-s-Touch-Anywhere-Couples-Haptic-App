@@ -1,15 +1,40 @@
 import SwiftUI
 
 struct TouchHistoryView: View {
+    @StateObject private var touchRepository = TouchRepository()
+    @StateObject private var hapticsManager = HapticsManager.shared
+    @State private var showingFavoritesOnly = false
+    
     var body: some View {
         NavigationView {
             VStack {
-                if true { // Empty state for now
+                // Filter Toggle
+                HStack {
+                    Button(showingFavoritesOnly ? "All Touches" : "Favorites Only") {
+                        showingFavoritesOnly.toggle()
+                        if showingFavoritesOnly {
+                            touchRepository.loadFavoriteTouches()
+                        } else {
+                            touchRepository.loadRecentTouches()
+                        }
+                    }
+                    .foregroundColor(.touchSyncAmber)
+                    
+                    Spacer()
+                    
+                    Text("\(displayedTouches.count) touches")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                
+                if displayedTouches.isEmpty {
+                    // Empty State
                     VStack(spacing: 16) {
                         Text("💕💖")
                             .font(.system(size: 60))
                         
-                        Text("No touches yet today")
+                        Text(showingFavoritesOnly ? "No favorite touches yet" : "No touches yet today")
                             .font(.title2)
                             .fontWeight(.semibold)
                         
@@ -17,24 +42,43 @@ struct TouchHistoryView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                        
-                        Button("Send Touch") {
-                            // Navigate to home view
-                        }
-                        .padding()
-                        .background(Color(red: 139/255, green: 0/255, blue: 0/255))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
                     }
                     .padding()
+                    
+                    Spacer()
                 } else {
-                    // Touch history list will go here
-                    List {
-                        // Placeholder for touch history cards
+                    // Touch History List
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(displayedTouches) { touch in
+                                TouchHistoryCard(touch: touch) {
+                                    replayTouch(touch)
+                                } onFavorite: {
+                                    touchRepository.toggleFavorite(touchId: touch.id)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
                     }
                 }
             }
             .navigationTitle("Touch History")
+            .onAppear {
+                touchRepository.loadRecentTouches()
+                touchRepository.loadFavoriteTouches()
+            }
+        }
+    }
+    
+    private var displayedTouches: [TouchRecord] {
+        showingFavoritesOnly ? touchRepository.favoriteTouches : touchRepository.recentTouches
+    }
+    
+    private func replayTouch(_ touch: TouchRecord) {
+        if let gesture = HapticGesture.allGestures.first(where: { $0.name == touch.gestureType }) {
+            hapticsManager.playGesture(gesture)
+        } else if let intensity = touch.intensity {
+            hapticsManager.playRealtimeTouch(intensity: intensity)
         }
     }
 }
